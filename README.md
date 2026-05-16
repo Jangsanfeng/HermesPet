@@ -1,6 +1,7 @@
 <div align="center">
 
 <img src="docs/banner.png" alt="HermesPet — 你的 AI 桌面伙伴，陪你工作，懂你所想" width="100%" />
+
 # HermesPet 
 <img src="docs/app-icon.png" alt="HermesPet App Icon" width="28" height="28" />
 
