@@ -264,6 +264,12 @@ HermesPet 还是个一个人维护的开源项目，每一个 issue / PR / star 
 
 ---
 
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=basionwang-bot/HermesPet&type=Date)](https://star-history.com/#basionwang-bot/HermesPet&Date)
+
+---
+
 <div align="center">
 
 Made with ✦ on a MacBook · 桌面 AI 应当鲜活
