@@ -266,6 +266,25 @@ final class ClawdWalkController {
                 self?.evaluateState()
             }
         }
+
+        // 屏幕参数变化（外接屏插拔 / 缩放变化 / 主屏切换）→ 桌宠也得跟新屏走
+        // 重新算 walkY + clamp positionX 到新屏的 visible range
+        nc.addObserver(forName: .init("HermesPetScreenParamsChanged"), object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.handleScreenParamsChanged() }
+        }
+    }
+
+    /// 屏幕参数变化处理：把桌宠重新摆到新屏的合法位置（walkY 重算 + positionX clamp 到屏内）
+    private func handleScreenParamsChanged() {
+        guard isShown, let win = window, let screen = targetScreen() else { return }
+        walkY = walkBaseY(on: screen)
+        let visible = screen.visibleFrame
+        let leftBound  = visible.minX + Self.edgeMargin
+        let rightBound = visible.maxX - windowSize.width - Self.edgeMargin
+        positionX = max(leftBound, min(rightBound, positionX))
+        win.setFrameOrigin(NSPoint(x: positionX, y: walkY))
+        // 气泡跟着 Clawd 位置同步
+        syncBubbleWindow()
     }
 
     // MARK: - 触发条件评估
@@ -335,13 +354,10 @@ final class ClawdWalkController {
     }
 
     /// 灵动岛"避让带" —— 桌宠普通漫步不能进、chasing/patrol 跨越要触发传送门。
-    /// 范围 = 物理刘海宽度向两侧各 +notchAvoidBuffer (30pt)。
-    /// 非 notch 屏返回 nil（无避让需求）
+    /// notch 模式：物理刘海宽度两侧各 +30pt
+    /// floating 模式：悬浮胶囊矩形两侧各 +30pt
     private func notchAvoidZone(on screen: NSScreen) -> ClosedRange<CGFloat>? {
-        guard let l = screen.auxiliaryTopLeftArea, let r = screen.auxiliaryTopRightArea else {
-            return nil
-        }
-        return (l.maxX - Self.notchAvoidBuffer)...(r.minX + Self.notchAvoidBuffer)
+        return HermesIslandGeometry.avoidZoneX(on: screen)
     }
 
     /// 判断桌宠窗口（左下角 = positionX，宽 = windowSize.width）是否跟避让带相交。
@@ -352,10 +368,9 @@ final class ClawdWalkController {
         return zone.contains(cx)
     }
 
-    /// 漫步 y：菜单栏下方 4pt 处。visibleFrame.maxY 已扣掉菜单栏，正好用
+    /// 漫步 y：按 displayMode 走在菜单栏下方（notch）或悬浮胶囊下方（floating），保证桌宠不遮灵动岛
     private func walkBaseY(on screen: NSScreen) -> CGFloat {
-        let h = windowSize.height
-        return screen.visibleFrame.maxY - 4 - h
+        HermesIslandGeometry.clawdWalkBaseY(on: screen, clawdHeight: windowSize.height)
     }
 
     // MARK: - 显示 / 隐藏
@@ -488,6 +503,8 @@ final class ClawdWalkController {
         ))
         host.frame = container.bounds
         host.autoresizingMask = [.width, .height]
+        // 决策 #6：禁止 SwiftUI 反推 NSWindow setFrame，避免嵌套 layout cycle 崩溃
+        if #available(macOS 13.0, *) { host.sizingOptions = [] }
         container.addSubview(host)
 
         let dropView = FileDropView(frame: container.bounds)
@@ -524,6 +541,10 @@ final class ClawdWalkController {
         let host = NSHostingView(rootView: TeleportPortalView(state: portalState))
         host.frame = NSRect(origin: .zero, size: Self.portalWindowSize)
         host.autoresizingMask = [.width, .height]
+        // 决策 #6：禁止 SwiftUI 反推 NSWindow setFrame —— Canvas + TimelineView 30fps 重绘 +
+        // withAnimation 改 openness 驱动 scaleEffect/opacity，没这道防线 ~ 长时间运行后必崩
+        // (用户 v1.2.7 跑 4.5 小时后崩溃 SIGTRAP @ NSView updateConstraintsForSubtreeIfNeeded)
+        if #available(macOS 13.0, *) { host.sizingOptions = [] }
         w.contentView = host
         portalWindow = w
     }
@@ -672,6 +693,8 @@ final class ClawdWalkController {
         let host = NSHostingView(rootView: ClawdWalkBubbleView(state: state))
         host.frame = NSRect(origin: .zero, size: Self.bubbleSize)
         host.autoresizingMask = [.width, .height]
+        // 决策 #6：禁止 SwiftUI 反推 NSWindow setFrame
+        if #available(macOS 13.0, *) { host.sizingOptions = [] }
         w.contentView = host
         bubbleWindow = w
     }

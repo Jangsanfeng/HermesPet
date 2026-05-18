@@ -112,6 +112,26 @@ final class DynamicIslandController {
             let type = event.type
             DispatchQueue.main.async { self?.handleMouseEvent(type: type) }
         }
+
+        // 屏幕参数变化（外接屏插拔 / HiDPI 缩放变化 / 屏幕排列变化 / 主屏切换）→ 灵动岛重摆位
+        // 这是 SwiftUI 子模块（PermissionWindow / ResponseSummary / ClawdWalk）跟着灵动岛走的唯一信号源
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.handleScreenParamsChanged() }
+        }
+    }
+
+    /// 屏幕参数变化处理：重新算 NSWindow frame + 广播给所有依赖灵动岛位置的子模块
+    private func handleScreenParamsChanged() {
+        positionWindow()
+        // 给 PermissionWindowController / ResponseSummaryWindowController / ClawdWalkController 等
+        // 一个统一信号 —— 它们各自重算自己的几何（用 HermesIslandGeometry helper）
+        NotificationCenter.default.post(
+            name: .init("HermesPetScreenParamsChanged"),
+            object: nil
+        )
     }
 
     // DynamicIslandController 是 AppDelegate 持有的单例，app 生命周期内不释放 → 不写 deinit
@@ -219,7 +239,14 @@ final class DynamicIslandController {
             if let l = notchLeftX, let r = notchRightX { return r - l }
             return 180
         }()
-        let actualNotchHeight: CGFloat = hasNotch ? safeArea.top : 28
+        // 显示模式：notch 用真实刘海高，floating 固定 28pt 让悬浮胶囊有标准尺寸
+        let effectiveMode = HermesIslandGeometry.effective(on: screen)
+        let actualNotchHeight: CGFloat = {
+            switch effectiveMode {
+            case .notch:    return hasNotch ? safeArea.top : 28
+            case .floating: return 28
+            }
+        }()
         // 缓存给 computeHitRectInScreen 用（NSEvent monitor 自检 hit area 时算屏幕坐标）
         self.cachedNotchHeight = actualNotchHeight
 
@@ -229,7 +256,7 @@ final class DynamicIslandController {
         let windowWidth: CGFloat = actualNotchWidth  + idleExtraWidth
         let windowHeight: CGFloat = actualNotchHeight + hoverDrop
 
-        // 水平：用「刘海真实中心」对齐
+        // 水平：用「刘海真实中心」对齐（floating 模式没有物理刘海时用屏幕中线）
         let notchCenterX: CGFloat = {
             if let l = notchLeftX, let r = notchRightX {
                 return (l + r) / 2
@@ -237,6 +264,9 @@ final class DynamicIslandController {
             return screenFrame.midX
         }()
         let x = notchCenterX - windowWidth / 2
+        // 纵向：方案 A —— notch / floating 都紧贴屏幕顶。
+        // floating 模式胶囊正好覆盖菜单栏中央 28pt 区域，模拟刘海屏的灵动岛视觉。
+        // NSWindow.ignoresMouseEvents=true，菜单栏中央被胶囊遮的图标仍可点击（事件穿透）
         let y = screenFrame.maxY - windowHeight
 
         pillWindow.setFrame(
@@ -255,7 +285,8 @@ final class DynamicIslandController {
                 "hoverDrop": hoverDrop,
                 "hoverExtraWidth": hoverExtraWidth,
                 "notchCenterX": notchCenterX,
-                "windowBottomY": y
+                "windowBottomY": y,
+                "isFloating": effectiveMode == .floating
             ]
         )
     }
@@ -311,6 +342,10 @@ struct DynamicIslandPillView: View {
     @State private var idleExtraWidth: CGFloat = 70
     @State private var hoverDrop: CGFloat = 14
     @State private var hoverExtraWidth: CGFloat = 4
+    /// floating（无刘海）显示模式：胶囊 4 角全圆 + mode 主色外发光 glow，
+    /// 不再画顶部直角 NotchShape。由 DynamicIslandController.positionWindow 广播 HermesPetGeometry
+    /// 携带 isFloating 字段驱动
+    @State private var isFloating: Bool = false
 
 
     /// 当前 AgentMode（驱动左耳精灵），通过 NotificationCenter 跟 ChatViewModel 同步
@@ -621,6 +656,7 @@ struct DynamicIslandPillView: View {
             if let v = note.userInfo?["idleExtraWidth"]  as? CGFloat { idleExtraWidth = v }
             if let v = note.userInfo?["hoverDrop"]       as? CGFloat { hoverDrop = v }
             if let v = note.userInfo?["hoverExtraWidth"] as? CGFloat { hoverExtraWidth = v }
+            if let v = note.userInfo?["isFloating"]      as? Bool    { isFloating = v }
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("HermesPetBackgroundStreamingChanged"))) { note in
             let c = (note.userInfo?["count"] as? Int) ?? 0
@@ -689,8 +725,15 @@ struct DynamicIslandPillView: View {
     private var pillBody: some View {
         VStack(spacing: 0) {
             ZStack {
-                NotchShape(cornerRadius: currentRadius)
+                NotchShape(cornerRadius: currentRadius, isFloating: isFloating)
                     .fill(isInErrorState ? Color(red: 0.55, green: 0.32, blue: 0.05) : Color.black)
+                    // floating 模式：贴边 1pt mode 主色细描边（不向外溢出）
+                    .overlay {
+                        if isFloating {
+                            NotchShape(cornerRadius: currentRadius, isFloating: true)
+                                .stroke(modeTint(currentMode).opacity(0.75), lineWidth: 1)
+                        }
+                    }
                 pillContent
             }
             .frame(width: currentWidth, height: currentHeight)
@@ -734,7 +777,7 @@ struct DynamicIslandPillView: View {
     @ViewBuilder
     private var shutterOverlay: some View {
         if shutterFlash {
-            NotchShape(cornerRadius: currentRadius)
+            NotchShape(cornerRadius: currentRadius, isFloating: isFloating)
                 .fill(Color.white)
                 .frame(width: currentWidth, height: currentHeight)
                 .blendMode(.plusLighter)
@@ -973,13 +1016,36 @@ struct DynamicIslandPillView: View {
         .transition(.opacity.combined(with: .scale(scale: 0.94)))
     }
 
-    /// 默认 idle 行：左耳极简圆点 + 右耳指示器（hover 才展开 sprite）
+    /// 默认 idle 行：左耳极简圆点 + (floating 中间桌宠名 · 状态) + 右耳指示器
     private var idleStateRow: some View {
         HStack(spacing: 0) {
             IdleModeDot(tint: modeTint(currentMode))
                 .padding(.leading, 18)
+
+            // floating 模式：胶囊中间 ~200pt 黑色空白利用起来，显示桌宠名 + 状态
+            // notch 模式中间被物理刘海遮住，保持极简不放文字
+            if isFloating {
+                HStack(spacing: 4) {
+                    Text(idlePetName)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.88))
+                    Text("·")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.white.opacity(0.45))
+                    Text(idleStatusText)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .lineLimit(1)
+                        .id(idleStatusText)   // 文本变化时强制重建 → transition 生效
+                        .transition(.opacity)
+                }
+                .padding(.leading, 8)
+                .animation(.easeInOut(duration: 0.2), value: idleStatusText)
+            }
+
             Spacer()
-            if backgroundStreamingCount > 0 {
+            // notch 模式保留独立 BackgroundStreamingBadge —— floating 已经用文字表达 N 条在跑
+            if backgroundStreamingCount > 0 && !isFloating {
                 BackgroundStreamingBadge(
                     count: backgroundStreamingCount,
                     tint: modeTint(currentMode)
@@ -997,6 +1063,24 @@ struct DynamicIslandPillView: View {
         }
         .animation(AnimTok.snappy, value: backgroundStreamingCount)
         .transition(.opacity)
+    }
+
+    /// 桌宠中文名 —— 跟 PetHeaderStrip / ResponseSummary 保持一致
+    private var idlePetName: String {
+        switch currentMode {
+        case .claudeCode: return "Clawd"
+        case .directAPI:  return "云朵"
+        case .hermes:     return "小马"
+        case .codex:      return "coco"
+        }
+    }
+
+    /// idle 时的状态文本：默认"在这呢"，后台 N 条对话流式 → "N 条对话在跑"
+    private var idleStatusText: String {
+        if backgroundStreamingCount > 0 {
+            return "\(backgroundStreamingCount) 条对话在跑"
+        }
+        return "在这呢"
     }
 }
 
@@ -1330,9 +1414,12 @@ struct IslandHitShape: Shape {
     }
 }
 
-/// 上直角、下圆角的形状。圆角参与动画，方便 hover 时圆角变化。
+/// 灵动岛胶囊形状。
+/// - `isFloating == false`（刘海模式）：顶部直角 + 左右下圆角，跟物理刘海无缝衔接
+/// - `isFloating == true`（悬浮模式）：4 个角都圆，完整 Capsule，浮在菜单栏下方
 struct NotchShape: Shape {
     var cornerRadius: CGFloat
+    var isFloating: Bool = false
 
     var animatableData: CGFloat {
         get { cornerRadius }
@@ -1340,8 +1427,13 @@ struct NotchShape: Shape {
     }
 
     func path(in rect: CGRect) -> Path {
-        var path = Path()
         let r = min(cornerRadius, rect.width / 2, rect.height / 2)
+        if isFloating {
+            // 4 角都圆的胶囊
+            return Path(roundedRect: rect, cornerRadius: r)
+        }
+        // 刘海风格：顶部直角，底部两个角圆
+        var path = Path()
         path.move(to: CGPoint(x: 0, y: 0))
         path.addLine(to: CGPoint(x: rect.width, y: 0))
         path.addLine(to: CGPoint(x: rect.width, y: rect.height - r))

@@ -244,28 +244,14 @@ final class ResponseSummaryWindowController {
     // MARK: - 定位（紧贴菜单栏底部 + 灵动岛中心居中）
 
     private func positionUnderIsland() {
-        let screen = NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 })
-            ?? NSScreen.main
-        guard let screen = screen else { return }
+        guard let screen = HermesIslandGeometry.targetScreen() else { return }
 
-        let screenFrame = screen.frame
-        let safeArea = screen.safeAreaInsets
-        let hasNotch = safeArea.top > 0
-
-        let notchCenterX: CGFloat = {
-            if hasNotch,
-               let left = screen.auxiliaryTopLeftArea,
-               let right = screen.auxiliaryTopRightArea {
-                return (left.maxX + right.minX) / 2
-            }
-            return screenFrame.midX
-        }()
-
-        let notchHeight: CGFloat = hasNotch ? safeArea.top : 28
-        let cardTopY = screenFrame.maxY - notchHeight
+        let notchCenterX = HermesIslandGeometry.islandCenterX(on: screen)
+        let cardTopY = HermesIslandGeometry.islandBottomY(on: screen)
+                     - HermesIslandGeometry.cardTopGapBelowIsland(on: screen)
 
         let x = notchCenterX - cardWidth / 2
-        // 卡片顶部往下挪 topGap 让灵动岛和卡片之间有视觉间隔，独立感更强
+        // 卡片顶部再下移 topGap (10pt) 让灵动岛和摘要卡之间有视觉间隔，独立感更强
         let y = cardTopY - cardHeight - topGap
 
         window.setFrame(

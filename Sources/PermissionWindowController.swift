@@ -186,29 +186,13 @@ final class PermissionWindowController {
     /// 纵向：卡片顶部 = 菜单栏底部（= 刘海凹槽底部 / 灵动岛 idle 形状底部），
     /// **不覆盖菜单栏**，菜单栏上的图标正常显示
     private func positionUnderIsland() {
-        let screen = NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 })
-            ?? NSScreen.main
-        guard let screen = screen else { return }
+        guard let screen = HermesIslandGeometry.targetScreen() else { return }
 
-        let screenFrame = screen.frame
-        let safeArea = screen.safeAreaInsets
-        let hasNotch = safeArea.top > 0
+        // 灵动岛中心 x + 灵动岛底部 y（floating 模式自然下移 8pt）
+        let notchCenterX = HermesIslandGeometry.islandCenterX(on: screen)
+        let cardTopY = HermesIslandGeometry.islandBottomY(on: screen)
+                     - HermesIslandGeometry.cardTopGapBelowIsland(on: screen)
 
-        let notchCenterX: CGFloat = {
-            if hasNotch,
-               let left = screen.auxiliaryTopLeftArea,
-               let right = screen.auxiliaryTopRightArea {
-                return (left.maxX + right.minX) / 2
-            }
-            return screenFrame.midX
-        }()
-
-        let notchHeight: CGFloat = hasNotch ? safeArea.top : 28
-        // 卡片顶部 = 菜单栏底部，跟灵动岛底部直角形态完美衔接成一体（无缝过渡）
-        let cardTopY = screenFrame.maxY - notchHeight
-
-        // 卡片左右沿严格对齐灵动岛 NSWindow（已删除 v1.2.4 的 leftShrink=1 偏移
-        // —— 用户截图反馈"左侧再 +1pt 就好了"，等价于把 leftShrink 消掉让左沿往左凸 1pt）
         let x = notchCenterX - cardWidth / 2
         let y = cardTopY - cardHeight
 

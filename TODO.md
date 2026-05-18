@@ -103,6 +103,55 @@
 - [x] **mode 绑定到 Conversation（多 CLI 真并行）** —— 以前 agentMode 是全局变量，切对话不切 mode，三个对话间互相污染（用户切到对话2 还在用对话1 的 CLI）。改成 `Conversation.mode` 字段，新建时继承 lastUsedMode，**发出第一条 user 消息后锁死**。Header 的 mode 切换器同步：未锁定时显示 chevron 可切；锁定时显示 `lock.fill` 图标，点一下弹 toast 提示新建对话。切换/关闭/新建/Pin/早报/快问迁移对话时统一 post `HermesPetModeChanged` + `checkConnection()`，让灵动岛精灵和连接状态都跟着 active 对话走。设置面板的"聊天对象"Picker 改成"查看配置"，仅切换显示哪一个 mode 的配置项，不动正在进行的对话
 - [x] **issue #3：语音唤醒和截屏高占用 / SIGABRT 嵌套 layout（2026-05-15 hotfix）** —— 用户 .ips 是 `NSHostingView.windowDidLayout → updateAnimatedWindowSize → setFrame → setNeedsUpdateConstraints → NSException`，跟决策 #7 一字不差。sample 显示主线程 1273/1273 全在 SwiftUI `GraphHost.flushTransactions` + LazyVStack 布局，物理内存 2.6 GB。三处修法：(1) `ChatView.body` 的 `.frame(minWidth: 360, minHeight: 360)` → `.frame(maxWidth: .infinity, maxHeight: .infinity)`，让 NSWindow.contentMinSize 单点控制最小尺寸 —— 直接消除 ChatWindow hide() 缩到 100×30 时 SwiftUI 反推 setFrame 的崩源；(2) `VoiceTranscriptOverlay.updateText` 每次 partial 都 `setFrame(... display:true)` + `.animation(value: state.text)` 一秒堆 20+ 段动画，改成"宽度等级 + 120ms 节流"才 setFrame、删 text animation；(3) `IntelligenceOverlay.AnimatedGlow` TimelineView 从 `.animation` 改成 `.periodic(1/30s)`、最贵的"内反光"第 4 层删掉、外层 blur 半径 36~52pt 减到 18~24pt —— GPU/CPU 工作量直接减半
 
+## [P2-人格化] 🧠 用户意图记录 + 桌宠习得（待规划，v1.3+）
+
+愿景：HermesPet 不只是一个聊天客户端，而是**长期陪用户工作的桌面宠物**。它应该能持续观察用户的工作方式、偏好、习惯，并在对的时机做对的事，形成真正的"养成感"和"懂你"。这个方向跟现有的桌面巡视（嗅文件 + Hermes 短评）、PinCard（任务规划）、活动采集（ActivityRecorder）是同一条主线 —— 把它们升级成一个连贯的"用户意图记录 + 桌宠学习"系统。
+
+### 数据层 —— 把"用户意图"这件事建模成持久化数据
+- [ ] **新建 `UserIntentStore`** —— `~/.hermespet/intents.json`（SQLite 也行，看规模）。存四类记录：
+  - **显式意图**：用户在聊天里说 "我想..." / "帮我搞定..." / 任务清单里勾的项，AI 提取关键词存档（用 user message + AI 摘要双写）
+  - **隐式意图**：用户行为派生 —— 经常在哪个时段开哪个 mode、经常拖什么类型的文件给桌宠、经常问什么领域问题
+  - **偏好**：被用户反复采纳的建议风格（短回复 / 长解释 / 代码 vs 自然语言）、被反复拒绝的方案
+  - **情绪信号**：被用户夸 / 骂 / "再试一次" 的次数，对哪只桌宠的反馈最积极（已有 PetPalette 偏好的扩展版）
+- [ ] **schema 设计要点**：每条记录带 timestamp + mode + conversation_id + 信号强度（用户重复多少次） + 派生来源（user 输入 / AI 提取 / 系统观察）。避免"什么都记"，要可被未来的 AI 自然查询
+- [ ] **隐私边界明确**：所有数据本地存储，**不主动上报**任何后端；设置里给一个"清空学习记录"按钮 + 单条删除入口
+
+### 采集层 —— 不打扰用户的前提下"看"用户在干啥
+- [ ] **升级 `ActivityRecorder`** —— 现状只采 app 切换 + 键鼠事件 + 用户消息文本。补：(1) 用户拖给桌宠的文件类型分布 (2) 用户最常用的 mode 时段分布 (3) 用户给哪种回答点了"复制" / Pin / 重试 (4) 用户在哪些对话上停留最久
+- [ ] **AI 提取 layer** —— 用户消息满 N 条后调一次轻量 AI 总结（本地 Hermes / DeepSeek-V3 都行），把 "用户最近一周关注什么" 萃取成结构化关键词（领域 / 工具 / 痛点 / 计划），存入 UserIntentStore
+- [ ] **去重 + 衰减**：相同意图重复记录加权重而非新建条；超过 30 天未被再触发的旧意图衰减权重，让模型记住"现在的你"而非"两年前的你"
+
+### 桌宠联动层 —— 让 4 只桌宠"懂你"
+- [ ] **主动开口的触发**：基于 UserIntentStore + ActivityRecorder 设计触发规则：
+  - 用户 30min 没说话 + 之前提过想做某事 → 桌宠头顶气泡："要继续昨天那个 xxx 吗？"
+  - 用户拖了同类型文件 5 次 → 桌宠气泡："你经常给我这种文件，要不要我帮你做一个快捷工作流？"
+  - 用户切了 4 次 mode 后又切回来 → 桌宠气泡：("看你折腾来折腾去")
+  - 早晨第一次出场 → 基于昨天活动给个一句话 brief："昨天你在 xxx 项目花了 2 小时，要继续吗？"
+- [ ] **桌宠人格分化**：4 只桌宠根据用户偏好显示不同"性格" —— Clawd 严谨理性、云朵活泼好奇、小马沉稳低调、coco 冷静技术。气泡文案从同一 quote pool 改成各自的人格 pool
+- [ ] **新增"养成度"**：累计互动次数 + 用户主动召唤次数 + 摸头次数共同贡献"亲密度"，亲密度高了桌宠会更多主动开口，反之保持安静
+- [ ] **AI 学习的"长期记忆"接口**：让聊天 ViewModel 在 buildPrompt 时把 UserIntentStore 的 TOP-N 关键词 + 最近 active 意图作为 system message 注入（每个 mode 客户端的注入方式不同 —— 决策 #18），让 AI 真正用上"懂你"
+
+### UI 层 —— 让用户可见、可调、可信任
+- [ ] **设置 → 隐私页新增"桌宠学到了什么"面板** —— 列表展示当前 UserIntentStore 里的所有意图条目（关键词 / 触发次数 / 最近时间），用户可勾掉不喜欢的，可一键清空
+- [ ] **每周回顾卡片** —— 周日给个"这周你和 Clawd 一起做了..." 总结卡（数据全本地派生），让"陪伴感"具象化
+- [ ] **桌宠生日彩蛋** —— 用户首次启动满 30/100/365 天，桌宠头顶冒个气泡"我们认识 N 天啦"，配合 PetPalette 闪烁
+
+### 跟现有系统的接入点
+- 已有的 `ActivityRecorder` / `ActivityStore`（SQLite）→ 直接扩展存意图条目
+- 已有的 `MorningBriefingService`（每日早简）→ 用 UserIntentStore 给早简加"懂你"维度
+- 已有的 `ClawdWalkOverlay.sniffPrompt`（桌面图标嗅嗅短评）→ 改用 UserIntentStore 派生个性化短评
+- 已有的 `ClawdBubbleOverlay`（头顶气泡）→ 接入主动开口触发规则
+
+### 关键技术决策（提前思考）
+- **AI 提取的成本**：每对话做一次萃取会 burn token。改成"每 N 条用户消息批量萃取一次"+ 用本地轻量模型（如果用户配了在线 AI），不强制
+- **跨 mode 数据隔离**：UserIntentStore 是全局的（不分 mode），让 4 个 mode 都能用上同一份"对你的认知"，避免每个 mode 各自学一遍
+- **冷启动问题**：新用户没历史时桌宠不要乱开口（避免"看起来很傻"），先静默观察一周再启动主动行为
+- **不踩 macOS 26 NSWindow 嵌套 layout 崩坑（决策 #1）**：所有新 UI（学到了什么面板 / 每周回顾卡）都用现有窗口路径（设置 popover / Pin 卡 / 灵动岛卡片），不引入新独立 NSWindow
+
+> 这是个**长期方向**而非具体冲刺。先把骨架（UserIntentStore + 隐式意图采集）做出来，再逐步把现有桌宠行为（嗅嗅短评 / 早简 / 头顶气泡）改成基于这套数据驱动。优先级排在已知 P0-Bug 后，跟 v1.3+ 的 Permission UI 协议化、Codex 内核升级一起规划。
+
+---
+
 ## [P1-推荐] 💎 高价值低成本优化
 - [x] **错误 Toast 系统**：errorMessage 在聊天窗口顶部 toast 显示
 - [x] **清空对话加 confirm**：点垃圾桶弹 confirmationDialog

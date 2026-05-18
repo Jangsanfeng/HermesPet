@@ -59,6 +59,7 @@ final class IntelligenceOverlayController {
         let host = NSHostingView(rootView: IntelligenceGlowView(isActive: false))
         host.frame = w.contentLayoutRect
         host.autoresizingMask = [.width, .height]
+        if #available(macOS 13.0, *) { host.sizingOptions = [] }  // 决策 #6
         w.contentView = host
 
         self.window = w

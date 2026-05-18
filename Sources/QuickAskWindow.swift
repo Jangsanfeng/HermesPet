@@ -230,6 +230,7 @@ final class QuickAskWindowController {
         ))
         host.frame = NSRect(x: 0, y: 0, width: 680, height: 80)
         host.autoresizingMask = [.width, .height]
+        if #available(macOS 13.0, *) { host.sizingOptions = [] }  // 决策 #6
         w.contentView = host
 
         self.window = w

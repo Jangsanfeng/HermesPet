@@ -17,6 +17,8 @@ struct SettingsView: View {
     /// 画布模式开关（实验性功能）—— ChatView 的 + 菜单根据这个 flag 决定是否显示"新建画布"
     @AppStorage("canvasModeEnabled") private var canvasModeEnabled: Bool = false
     @AppStorage(ChatFontScale.storageKey) private var chatFontScale: Double = ChatFontScale.default
+    @AppStorage(DisplayMode.storageKey) private var displayModeRaw: String = DisplayMode.auto.rawValue
+    @State private var pendingRestartFromDisplayMode = false
     /// 桌宠桌面漫步大小档位（5 档：迷你 / 小 / 默认 / 大 / 特大）
     @AppStorage(PetWalkSizeScale.storageKey) private var petWalkSizeScale: Double = PetWalkSizeScale.default
     /// 当前正在"查看 / 编辑配置"的 mode。
@@ -1217,6 +1219,11 @@ struct SettingsView: View {
 
     private var systemSection: some View {
         VStack(alignment: .leading, spacing: 14) {
+            // —— 灵动岛显示模式 ——
+            displayModeRow
+
+            Divider()
+
             // —— 聊天字号 ——
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
@@ -1310,6 +1317,56 @@ struct SettingsView: View {
         case 1.30: return "更大"
         case 1.50: return "巨大"
         default:   return "\(Int(scale * 100))%"
+        }
+    }
+
+    // MARK: - 显示模式（灵动岛 / 悬浮胶囊 切换）
+
+    private var displayModeRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "macbook.gen2")
+                    .foregroundStyle(.purple)
+                Text("灵动岛显示")
+                    .font(.system(size: 13, weight: .medium))
+                Spacer()
+            }
+
+            Picker("灵动岛显示", selection: $displayModeRaw) {
+                Text("跟随屏幕").tag(DisplayMode.auto.rawValue)
+                Text("刘海").tag(DisplayMode.notch.rawValue)
+                Text("悬浮胶囊").tag(DisplayMode.floating.rawValue)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .onChange(of: displayModeRaw) { _, _ in
+                pendingRestartFromDisplayMode = true
+            }
+
+            Text("无刘海屏（Air / Intel Mac / 外接显示器）建议选「悬浮胶囊」，胶囊会浮在菜单栏下方 + 跟当前桌宠主色发光。切换后需要重启应用生效。")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .alert("需要重启应用", isPresented: $pendingRestartFromDisplayMode) {
+            Button("稍后") {
+                pendingRestartFromDisplayMode = false
+            }
+            Button("立刻重启") {
+                relaunchApp()
+            }
+        } message: {
+            Text("灵动岛显示模式切换需要重启应用才能生效。")
+        }
+    }
+
+    /// 重启 app：用 NSWorkspace 重新打开自己 + terminate 当前进程
+    private func relaunchApp() {
+        let bundleURL = Bundle.main.bundleURL
+        let cfg = NSWorkspace.OpenConfiguration()
+        cfg.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: bundleURL, configuration: cfg) { _, _ in
+            DispatchQueue.main.async { NSApp.terminate(nil) }
         }
     }
 

@@ -105,6 +105,7 @@ final class ChoiceMenuOverlayController {
         ))
         host.frame = NSRect(x: 0, y: 0, width: 320, height: 200)
         host.autoresizingMask = [.width, .height]
+        if #available(macOS 13.0, *) { host.sizingOptions = [] }  // 决策 #6
         w.contentView = host
 
         self.window = w
