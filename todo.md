@@ -26,3 +26,9 @@
 - [x] Website: Add community stats display (stars, forks, contributors)
 - [x] GitHub: Optimize README (official statement, channels list, copyright)
 - [x] GitHub: Add version verification steps in README
+- [x] 重新设计宣传页：建立专业色彩体系
+- [x] 重新设计宣传页：高质量 Hero 区域
+- [x] 重新设计宣传页：核心功能展示区域
+- [x] 重新设计宣传页：引擎/模式介绍区域
+- [x] 重新设计宣传页：开发历程和官方认证区域
+- [x] 重新设计宣传页：整体视觉协调性和动画效果
