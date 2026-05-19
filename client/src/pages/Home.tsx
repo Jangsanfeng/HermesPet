@@ -82,6 +82,17 @@ const islandStates: [string, string][] = [
 
 const engineKeys = ["direct", "hermes", "claude", "codex"] as const;
 
+const timelineEvents = [
+  { date: "2024.10", title: "项目启动", desc: "开始构思 macOS 原生 AI 桌面伴侣的概念" },
+  { date: "2024.12", title: "v1.0 发布", desc: "首个可用版本，支持 Claude Code 集成和灵动岛" },
+  { date: "2025.01", title: "v1.1 多引擎", desc: "加入 Hermes Gateway 和在线 AI 模式" },
+  { date: "2025.03", title: "v1.2 桌宠系统", desc: "5 只像素桌宠上线，每个 mode 专属伴侣" },
+  { date: "2025.04", title: "v1.2.4 权限 UI", desc: "工具权限确认系统，AI 不替你做主" },
+  { date: "2025.05", title: "v1.2.7 传送门", desc: "桌宠跨灵动岛传送门动画，4 只迷你精灵" },
+  { date: "2025.05", title: "v1.2.9 OpenClaw", desc: "OpenClaw 接入 + fomo 桌宠 + 官方版本验证" },
+  { date: "即将到来", title: "Windows 版", desc: "Windows 版本开发中，即将上线" },
+];
+
 export default function Home() {
   const [activeEngine, setActiveEngine] = useState("direct");
   const [islandIndex, setIslandIndex] = useState(0);
@@ -113,8 +124,9 @@ export default function Home() {
         <nav aria-label="页面导航">
           <a href="#experience">体验</a>
           <a href="#engines">引擎</a>
+          <a href="#timeline">历程</a>
           <a href="#privacy">隐私</a>
-          <a href="#install">安装</a>
+          <a href="#official">官方</a>
         </nav>
         <a
           className="header-action"
@@ -132,8 +144,20 @@ export default function Home() {
           <div className="hero-media" aria-hidden="true"></div>
           <div className="hero-vignette" aria-hidden="true"></div>
           <div className="hero-content">
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
               <p className="eyebrow" style={{ margin: 0 }}>Swift 6 / SwiftUI / macOS 14+</p>
+              <span style={{
+                fontSize: '11px',
+                fontWeight: 900,
+                color: '#fff',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                padding: '3px 10px',
+                borderRadius: '999px',
+              }}>
+                官方网站
+              </span>
               <span style={{ fontSize: '12px', fontWeight: 900, color: '#2e8cff', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Windows 版即将上线</span>
             </div>
             <h1 id="hero-title">HermesPet</h1>
@@ -191,6 +215,157 @@ export default function Home() {
               <span>{islandStatus}</span>
             </div>
           </aside>
+        </section>
+
+        {/* Official Author Verification */}
+        <section className="section" id="author-verify" style={{
+          background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(255, 255, 255, 0.02))',
+          borderTop: '1px solid rgba(34, 197, 94, 0.2)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '24px',
+              flexWrap: 'wrap',
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(34, 197, 94, 0.15)',
+                border: '1px solid rgba(34, 197, 94, 0.4)',
+                borderRadius: '999px',
+                padding: '6px 16px',
+              }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 0L10 5.5L16 6L11.5 10L13 16L8 12.5L3 16L4.5 10L0 6L6 5.5L8 0Z" fill="#22c55e"/>
+                </svg>
+                <span style={{ color: '#22c55e', fontWeight: 800, fontSize: '13px', letterSpacing: '0.04em' }}>
+                  官方认证项目
+                </span>
+              </div>
+              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>
+                由原作者 Basion Wang 独立开发并维护
+              </span>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '16px',
+            }}>
+              <div style={{
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'rgba(255, 255, 255, 0.03)',
+              }}>
+                <h3 style={{ color: '#22c55e', fontSize: '14px', fontWeight: 800, marginBottom: '12px', letterSpacing: '0.04em' }}>
+                  原作者
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: 900,
+                    fontSize: '16px',
+                  }}>B</div>
+                  <div>
+                    <p style={{ color: 'white', fontWeight: 700, margin: '0 0 2px 0' }}>Basion Wang</p>
+                    <a
+                      href="https://github.com/basionwang-bot"
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}
+                    >
+                      @basionwang-bot
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'rgba(255, 255, 255, 0.03)',
+              }}>
+                <h3 style={{ color: '#22c55e', fontSize: '14px', fontWeight: 800, marginBottom: '12px', letterSpacing: '0.04em' }}>
+                  版本验证
+                </h3>
+                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', lineHeight: '1.6', margin: '0 0 8px 0' }}>
+                  正版 App 内置 codesign 验证
+                </p>
+                <code style={{
+                  display: 'block',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  background: 'rgba(0,0,0,0.3)',
+                  color: '#22c55e',
+                  fontSize: '12px',
+                  fontFamily: 'monospace',
+                }}>
+                  Team ID: R34KL4X4D9
+                </code>
+              </div>
+
+              <div style={{
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'rgba(255, 255, 255, 0.03)',
+              }}>
+                <h3 style={{ color: '#22c55e', fontSize: '14px', fontWeight: 800, marginBottom: '12px', letterSpacing: '0.04em' }}>
+                  许可证
+                </h3>
+                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', lineHeight: '1.6', margin: '0 0 4px 0' }}>
+                  Apache License 2.0
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', margin: 0 }}>
+                  使用需保留版权声明和 NOTICE 文件
+                </p>
+              </div>
+            </div>
+
+            {/* Community Stats */}
+            <div style={{
+              marginTop: '24px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+              gap: '12px',
+            }}>
+              {[
+                { label: 'GitHub Stars', value: '200+', icon: '⭐' },
+                { label: 'Releases', value: '9+', icon: '📦' },
+                { label: 'Commits', value: '150+', icon: '📝' },
+                { label: '独立开发者', value: '1 人', icon: '👨‍💻' },
+              ].map((stat) => (
+                <div key={stat.label} style={{
+                  padding: '16px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: '20px', marginBottom: '4px' }}>{stat.icon}</div>
+                  <div style={{ color: 'white', fontWeight: 800, fontSize: '18px', marginBottom: '2px' }}>{stat.value}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px' }}>{stat.label}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginTop: '12px', textAlign: 'center' }}>
+              数据快照，实时数据请访问 <a href="https://github.com/basionwang-bot/HermesPet" target="_blank" rel="noreferrer" style={{ color: 'rgba(34, 197, 94, 0.7)', textDecoration: 'none' }}>GitHub 仓库</a>
+            </p>
+          </div>
         </section>
 
         {/* Experience */}
@@ -406,6 +581,85 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Development Timeline */}
+        <section className="section" id="timeline" style={{
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <div className="section-heading">
+              <p className="eyebrow">开发历程</p>
+              <h2 style={{ color: 'white' }}>从第一行代码到现在，每一步都有迹可循</h2>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginBottom: '32px', textAlign: 'center' }}>
+              所有版本和提交记录均可在 GitHub 仓库中验证
+            </p>
+            <div style={{ position: 'relative', paddingLeft: '32px' }}>
+              {/* Timeline line */}
+              <div style={{
+                position: 'absolute',
+                left: '11px',
+                top: '8px',
+                bottom: '8px',
+                width: '2px',
+                background: 'linear-gradient(to bottom, #22c55e, rgba(34, 197, 94, 0.2))',
+              }} />
+              {timelineEvents.map((event, i) => (
+                <div key={i} style={{
+                  position: 'relative',
+                  marginBottom: '24px',
+                  paddingLeft: '24px',
+                }}>
+                  {/* Timeline dot */}
+                  <div style={{
+                    position: 'absolute',
+                    left: '-26px',
+                    top: '6px',
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    background: i === timelineEvents.length - 1 ? '#2e8cff' : '#22c55e',
+                    border: '2px solid rgba(0,0,0,0.5)',
+                  }} />
+                  <div style={{
+                    padding: '16px 20px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+                      <span style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: i === timelineEvents.length - 1 ? '#2e8cff' : '#22c55e',
+                        fontFamily: 'monospace',
+                      }}>{event.date}</span>
+                      <span style={{ color: 'white', fontWeight: 700, fontSize: '15px' }}>{event.title}</span>
+                    </div>
+                    <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '14px', margin: 0, lineHeight: '1.5' }}>
+                      {event.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '16px' }}>
+              <a
+                href="https://github.com/basionwang-bot/HermesPet/releases"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  color: 'rgba(255,255,255,0.5)',
+                  fontSize: '13px',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3px',
+                }}
+              >
+                在 GitHub Releases 查看完整版本历史 →
+              </a>
+            </div>
+          </div>
+        </section>
+
         {/* Privacy */}
         <section
           className="section privacy-section"
@@ -583,6 +837,223 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Official Channels & Anti-Plagiarism */}
+        <section className="section" id="official" style={{
+          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.06), rgba(255, 255, 255, 0.02))',
+          borderTop: '1px solid rgba(239, 68, 68, 0.15)',
+        }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <div className="section-heading">
+              <p className="eyebrow" style={{ color: '#ef4444' }}>官方声明</p>
+              <h2 style={{ color: 'white' }}>认准官方渠道，远离盗版风险</h2>
+            </div>
+
+            {/* Anti-plagiarism warning */}
+            <div style={{
+              padding: '24px',
+              borderRadius: '14px',
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              marginBottom: '32px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 2L18 17H2L10 2Z" fill="none" stroke="#ef4444" strokeWidth="2"/>
+                  <path d="M10 8V12" stroke="#ef4444" strokeWidth="2" strokeLinecap="round"/>
+                  <circle cx="10" cy="15" r="1" fill="#ef4444"/>
+                </svg>
+                <span style={{ color: '#ef4444', fontWeight: 800, fontSize: '15px' }}>防剽窃声明</span>
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '14px', lineHeight: '1.7', margin: '0 0 12px 0' }}>
+                近期发现有第三方将本项目复制后改名发布、声称自己是原作者、或在网盘/二手平台分发修改版。
+                <strong style={{ color: 'white' }}>所有官方渠道之外的版本均不保证安全和正版</strong>，
+                可能被植入恶意代码。请务必从官方 GitHub Releases 下载。
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13px', margin: 0 }}>
+                如发现盗用或冒名行为，欢迎在{' '}
+                <a
+                  href="https://github.com/basionwang-bot/HermesPet/issues"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: '#ef4444', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+                >
+                  GitHub Issues
+                </a>{' '}
+                中举报（选择"盗用举报"模板），我们会采取包括 DMCA Takedown 在内的法律手段。
+              </p>
+            </div>
+
+            {/* Official channels */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '16px',
+              marginBottom: '32px',
+            }}>
+              {[
+                {
+                  label: '官方网站',
+                  value: 'hermespet.cc',
+                  href: 'https://hermespet.cc',
+                  icon: '🌐',
+                },
+                {
+                  label: '官方 GitHub',
+                  value: 'basionwang-bot/HermesPet',
+                  href: 'https://github.com/basionwang-bot/HermesPet',
+                  icon: '📦',
+                },
+                {
+                  label: '官方下载',
+                  value: 'GitHub Releases',
+                  href: 'https://github.com/basionwang-bot/HermesPet/releases',
+                  icon: '📥',
+                },
+                {
+                  label: '联系作者',
+                  value: 'basionwang@gmail.com',
+                  href: 'mailto:basionwang@gmail.com',
+                  icon: '📧',
+                },
+              ].map((ch) => (
+                <a
+                  key={ch.label}
+                  href={ch.href}
+                  target={ch.href.startsWith('mailto') ? undefined : '_blank'}
+                  rel="noreferrer"
+                  style={{
+                    display: 'block',
+                    padding: '16px 20px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    textDecoration: 'none',
+                    transition: 'border-color 0.2s',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '16px' }}>{ch.icon}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: 600 }}>{ch.label}</span>
+                  </div>
+                  <span style={{ color: 'white', fontSize: '14px', fontWeight: 600 }}>{ch.value}</span>
+                </a>
+              ))}
+            </div>
+
+            {/* How to verify */}
+            <div style={{
+              padding: '24px',
+              borderRadius: '14px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'rgba(255, 255, 255, 0.03)',
+            }}>
+              <h3 style={{ color: 'white', fontSize: '16px', fontWeight: 800, marginBottom: '16px' }}>
+                如何验证你下载的是正版？
+              </h3>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {[
+                  { step: '1', text: '仅从 GitHub Releases 官方页面下载 DMG' },
+                  { step: '2', text: '安装后打开 设置 → 关于 → 官方版本验证' },
+                  { step: '3', text: '正版会显示 Team ID: R34KL4X4D9' },
+                  { step: '4', text: '或在终端运行 codesign -dvvv 命令验证签名' },
+                ].map((item) => (
+                  <div key={item.step} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      background: 'rgba(34, 197, 94, 0.2)',
+                      color: '#22c55e',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      flexShrink: 0,
+                    }}>{item.step}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer style={{
+          padding: '48px 24px 32px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'rgba(0, 0, 0, 0.3)',
+        }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '32px',
+              marginBottom: '32px',
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                  <img src={ICON_URL} alt="" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
+                  <span style={{ color: 'white', fontWeight: 800, fontSize: '16px' }}>HermesPet</span>
+                </div>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', lineHeight: '1.6', margin: 0 }}>
+                  让 AI 住在你 MacBook 的刘海里<br/>
+                  由 Basion Wang 独立开发
+                </p>
+              </div>
+              <div>
+                <h4 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '12px' }}>
+                  资源
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <a href="https://github.com/basionwang-bot/HermesPet" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}>GitHub 仓库</a>
+                  <a href="https://github.com/basionwang-bot/HermesPet/releases" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}>下载 Releases</a>
+                  <a href="https://github.com/basionwang-bot/HermesPet/issues" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}>Issues 反馈</a>
+                </div>
+              </div>
+              <div>
+                <h4 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '12px' }}>
+                  法律
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <a href="https://github.com/basionwang-bot/HermesPet/blob/main/LICENSE" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}>Apache License 2.0</a>
+                  <a href="https://github.com/basionwang-bot/HermesPet/blob/main/NOTICE" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}>NOTICE 归属文件</a>
+                  <a href="https://github.com/basionwang-bot/HermesPet/blob/main/BRAND_GUIDELINES.md" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}>品牌使用指南</a>
+                </div>
+              </div>
+              <div>
+                <h4 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '12px' }}>
+                  支持
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <a href="https://afdian.com/a/basionwang" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}>爱发电赞助</a>
+                  <a href="mailto:basionwang@gmail.com" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}>联系作者</a>
+                  <a href="https://github.com/basionwang-bot/HermesPet/blob/main/CONTRIBUTING.md" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none' }}>贡献指南</a>
+                </div>
+              </div>
+            </div>
+
+            {/* Copyright */}
+            <div style={{
+              paddingTop: '24px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '12px',
+            }}>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', margin: 0 }}>
+                © 2024-2026 Basion Wang. All rights reserved. Licensed under Apache License 2.0.
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px', margin: 0 }}>
+                "HermesPet" 及其 Logo 为 Basion Wang 的商标。未经授权不得用于商业推广。
+              </p>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   );

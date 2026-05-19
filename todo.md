@@ -1,0 +1,28 @@
+# Project TODO
+
+- [x] Basic homepage layout
+- [x] Navigation menu
+- [x] Hero section with Dynamic Island animation
+- [x] Core experience cards
+- [x] Message flow section
+- [x] Multi-engine tab panel
+- [x] Feature detail cards
+- [x] Privacy and tech section
+- [x] Install section
+- [x] Windows coming soon section
+- [x] Favicon update to new cat icon
+- [x] GitHub: Add SECURITY.md
+- [x] GitHub: Add NOTICE file
+- [x] GitHub: Add CONTRIBUTING.md
+- [x] GitHub: Add CODE_OF_CONDUCT.md
+- [x] GitHub: Add BRAND_GUIDELINES.md
+- [x] GitHub: Add Issue templates (bug, feature, plagiarism)
+- [x] GitHub: Add DMCA template
+- [x] Website: Add official badge and author verification section
+- [x] Website: Add legal/copyright footer with Apache 2.0 info
+- [x] Website: Add anti-plagiarism warning section
+- [x] Website: Add official channels section
+- [x] Website: Add development timeline section
+- [x] Website: Add community stats display (stars, forks, contributors)
+- [x] GitHub: Optimize README (official statement, channels list, copyright)
+- [x] GitHub: Add version verification steps in README
