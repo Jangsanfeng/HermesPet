@@ -22,6 +22,8 @@
 
 直接拿 macOS DMG · 双击安装 · 选服务商粘 API Key 就能用，**不依赖任何命令行工具**
 
+<sub>💡 推荐下载上方官方签名 DMG（免编译、双击即用、权限稳定）· 🤖 AI 助手安装请参考 [AGENTS.md](AGENTS.md)</sub>
+
 </div>
 
 ---

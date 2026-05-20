@@ -23,6 +23,8 @@
 
 Grab the macOS DMG · double-click to install · pick a provider, paste an API key — **no command-line tools required**
 
+<sub>💡 Prefer the official signed DMG above (no build needed, double-click to run) · 🤖 AI agents: see [AGENTS.md](AGENTS.md)</sub>
+
 </div>
 
 ---
