@@ -1,638 +1,351 @@
-# Web App Template (Static Frontend)
+<div align="center">
 
-Pure React 19 + Tailwind 4 template with shadcn/ui baked in. **Use this README as the checklist for shipping static experiences.**
+<img src="docs/banner.png" alt="HermesPet — 你的 AI 桌面伙伴，陪你工作，懂你所想" width="100%" />
 
-> **Note:** This template includes a minimal `shared/` and `server/` directory with placeholder types to support imported templates. These are just compatibility placeholders - web-static remains a true static-only template without API functionality.
+# HermesPet 
+<img src="docs/app-icon.png" alt="HermesPet App Icon" width="28" height="28" />
 
----
+**让 AI 住在你 MacBook 的刘海里 · 6 种引擎并行 · 6 只像素桌宠陪你工作**
 
-## Stack Overview
-- Client-only routing powered by React + Wouter.
-- Design tokens live entirely in `client/src/index.css`—keep that file intact.
+[![Website](https://img.shields.io/badge/官网-hermespet.cc-7B68EE?logo=safari&logoColor=white)](https://hermespet.cc)
+[![macOS](https://img.shields.io/badge/macOS-14.0+-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
+[![Swift](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)](https://www.swift.org/)
+[![Latest Release](https://img.shields.io/github/v/release/basionwang-bot/HermesPet?label=最新版&color=success&logo=github)](https://github.com/basionwang-bot/HermesPet/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/basionwang-bot/HermesPet/total?label=下载量&color=blue)](https://github.com/basionwang-bot/HermesPet/releases)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-## File Structure
+🌍 **中文** · [English](./README.en.md)
 
-```
-client/
-  public/       ← Small configuration files ONLY (favicon.ico, robots.txt). DO NOT put images/media here.
-  src/
-    pages/      ← Page-level components
-    components/ ← Reusable UI & shadcn/ui
-    contexts/   ← React contexts
-    hooks/      ← Custom React hooks
-    lib/        ← Utility helpers
-    App.tsx     ← Routes & top-level layout
-    main.tsx    ← React entry point
-    index.css   ← global style
-server/         ← Placeholder for imported template compatibility
-shared/         ← Placeholder for imported template compatibility
-  const.ts      ← Shared constants
-```
+### 📦 [点这里下载最新版本 DMG →](https://github.com/basionwang-bot/HermesPet/releases/latest)
 
-### ⚠️ Handling Images & Media
+### 🌐 [访问项目主页 · hermespet.cc →](https://hermespet.cc)
 
-**DO NOT** store images, videos, or large assets in `client/public/` or `client/src/assets/`. Local media files will cause deployment timeouts.
+直接拿 macOS DMG · **双击安装即可打开**（已 Apple 公证）· 选服务商粘 API Key 就能用，**不依赖任何命令行工具**
 
-**Required workflow:**
-1. Upload assets using the CLI: `manus-upload-file --webdev path/to/image.png`
-2. Use the returned storage path directly in your code: `<img src="/manus-storage/image_a1b2c3d4.png" />`
-3. Store the original local file in `/home/ubuntu/webdev-static-assets/` (outside the project directory)
+<sub>💡 推荐下载上方官方签名 DMG（免编译、双击即用、权限稳定）· 🤖 AI 助手安装请参考 [AGENTS.md](AGENTS.md)</sub>
 
-Only small configuration files like `favicon.ico`, `robots.txt`, and `manifest.json` belong in `client/public/`.
-
-Files in `client/public` are available at the root of your site—reference them with absolute paths (`/robots.txt`, etc.) from HTML templates, JSX, or meta tags.
+</div>
 
 ---
 
-## 🎯 Development Workflow
-
-1. **Choose a design style** before you write any frontend code according to Design Guide (color, font, shadow, art style). Tell user what you chose. Remember to edit `client/src/index.css` for global theming and add needed font using google font cdn in `client/index.html`.
-2. **Compose pages** in `client/src/pages/`. Keep sections modular so they can be reused across routes.
-3. **Share primitives** via `client/src/components/`—extend shadcn/ui when needed instead of duplicating markup.
-4. **Keep styling consistent** by relying on existing Tailwind tokens (spacing, colors, typography).
-5. **Fetch external data** with `useEffect` if the site needs dynamic content from public APIs.
----
-
-## 🎨 Frontend Development Guidelines
-
-**UI & Styling:**
-- Prefer shadcn/ui components for interactions to keep a modern, consistent look; import from `@/components/ui/*` (e.g., `button`, `card`, `dialog`).
-- Compose Tailwind utilities with component variants for layout and states; avoid excessive custom CSS. Use built-in `variant`, `size`, etc. where available.
-- Preserve design tokens: keep the `@layer base` rules in `client/src/index.css`. Utilities like `border-border` and `font-sans` depend on them.
-- Consistent design language: use spacing, radius, shadows, and typography via tokens. Extract shared UI into `components/` for reuse instead of copy‑paste.
-- Accessibility and responsiveness: keep visible focus rings and ensure keyboard reachability; design mobile‑first with thoughtful breakpoints.
-- Theming: Choose dark/light theme to start with for ThemeProvider according to your design style (dark or light bg), then manage colors pallette with CSS variables in `client/src/index.css` instead of hard‑coding to keep global consistency.
-- Micro‑interactions and empty states: add motion, empty states, and icons tastefully to improve quality without distracting from content.
-- Navigation: For internal tools/admin panels, use persistent sidebar. For public-facing apps, design navigation based on content structure (top nav, side nav, or contextual)—ensure clear escape routes from all pages.
-- Placeholder UI elements: When adding structural placeholders (nav items, CTAs) for not-yet-implemented features, show toast on click ("Feature coming soon"). Inform user which elements are placeholders when presenting work.
-
-**React Best Practices:**
-- Never call setState/navigation in render phase → wrap in `useEffect`
-
-**Customized Defaults:**
-This template customizes some Tailwind/shadcn defaults for simplified usage:
-- `.container` is customized to auto-center and add responsive padding (see `index.css`). Use directly without `mx-auto`/`px-*`. For custom widths, use `max-w-*` with `mx-auto px-4`.
-- `.flex` is customized to have `min-width:0` and `min-height:0` by default
-- `button` variant `outline` uses transparent background (not `bg-background`). Add bg color class manually if needed.
+> ## 🛡️ 官方声明 · 认准唯一正版来源
+>
+> HermesPet 由 **[Basion Wang (@basionwang-bot)](https://github.com/basionwang-bot)** 从 2024 年 10 月起独立设计、开发并持续维护至今。所有提交记录、版本发布历史均可在本仓库验证。
+>
+> ⚠️ 近期发现多起第三方**复制改名、冒充原作者、在网盘 / 二手平台分发修改版**的行为。**官方渠道之外的版本一律不保证安全**，可能被植入恶意代码。
+>
+> | 官方渠道 | 地址 | 用途 |
+> |---|---|---|
+> | 🌐 官网 | [hermespet.cc](https://hermespet.cc) | 产品介绍、版本信息 |
+> | 📦 仓库 | [github.com/basionwang-bot/HermesPet](https://github.com/basionwang-bot/HermesPet) | 源码、Issues |
+> | 📥 下载 | [GitHub Releases](https://github.com/basionwang-bot/HermesPet/releases) | **唯一安全下载源** |
+> | 📧 联系 | [basionwang@gmail.com](mailto:basionwang@gmail.com) | 合作、举报 |
+>
+> **如何验证正版**：从 GitHub Releases 下载 → 设置 → 关于 → **官方版本验证**，正版会显示原作者 Team ID **`R34KL4X4D9`**。验证失败请立即删除重新下载。
+>
+> 发现盗用请通过 [Issues 盗用举报模板](https://github.com/basionwang-bot/HermesPet/issues/new?template=plagiarism_report.md) 或邮件举报，我们会采取包括 **DMCA Takedown** 在内的法律手段。
 
 ---
 
-## 🎨 Design Guide
+<div align="center">
 
-When generating frontend UI, avoid generic patterns that lack visual distinction:
-- Avoid generic full-page centered layouts—prefer asymmetric/sidebar/grid structures for landing pages and dashboards
-- When user provides vague requirements, make creative design decisions (choose specific color palette, typography, layout approach)
-- Prioritize visual diversity: combine different design systems (e.g., one color scheme + different typography + another layout principle)
-- For landing pages: prefer asymmetric layouts, specific color values (not just "blue"), and textured backgrounds over flat colors
-- For dashboards: use defined spacing systems, soft shadows over borders, and accent colors for hierarchy
+<sub>🌟 <b>感谢这些朋友支持 HermesPet ❤️</b></sub>
 
----
+<table>
+<tr>
+<td align="center" width="110">
+<img src="docs/sponsors/sponsor-01.jpg" width="56" height="56" alt="匿名朋友"/><br/>
+<sub><b>匿名</b></sub>
+</td>
+<td align="center" width="110">
+<img src="docs/sponsors/sponsor-02.jpg" width="56" height="56" alt="匿名朋友"/><br/>
+<sub><b>匿名</b></sub>
+</td>
+<td align="center" width="110">
+<img src="docs/sponsors/next-slot.svg" width="56" height="56" alt="下一位"/><br/>
+<sub><i>下一位？</i></sub>
+</td>
+</tr>
+</table>
 
-## Animation Guide
-
-Bake motion taste in from the first line of code. Snappy, physically intuitive interactions are not a polish pass — they are part of the initial build.
-- Decide whether to animate at all: keyboard-initiated actions (command palettes, shortcuts) must be instant — never animate them. High-frequency interactions (hover, list nav) should be minimal. Reserve richer motion for occasional events (modals, drawers, toasts) and rare delight moments (onboarding).
-- Keep UI animations under 300ms. A 180ms dropdown feels significantly better than a 400ms one. Typical ranges: button press 100–160ms, tooltips 125–200ms, dropdowns 150–250ms, modals/drawers 200–500ms.
-- Use strong custom easings, not the weak CSS defaults. Default to a snappy ease-out for entering/exiting UI: `--ease-out: cubic-bezier(0.23, 1, 0.32, 1);`. For moving/morphing use `--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);`. NEVER use `ease-in` for UI animations — it feels sluggish.
-- Buttons must feel responsive: add `transform: scale(0.97)` on `:active` with a ~160ms ease-out transition so the UI confirms it heard the user.
-- Never animate from `scale(0)` — nothing in the real world appears from nothing. Start from `scale(0.95)` combined with `opacity: 0`.
-- Origin-aware popovers/dropdowns: scale in from the trigger point (e.g. `transform-origin: var(--radix-popover-content-transform-origin)`). Modals are the exception and stay centered.
-- Prefer CSS transitions over @keyframes for dynamic UI state. Transitions can be interrupted and reversed smoothly mid-flight; keyframes restart from zero and feel broken when interrupted.
-- Only animate `transform` and `opacity` for motion — they run on the GPU and skip layout/paint. Avoid animating `width`, `height`, `padding`, `margin`, `top/left` unless absolutely necessary.
-- Stagger grouped entrances by 30–80ms per item to create a cascading reveal instead of a wall of motion.
-- Asymmetric timing for deliberate actions: hold-to-confirm should be slow and linear on press (e.g. 2s linear), but release/cancel should snap back fast (~200ms ease-out).
-- Respect `prefers-reduced-motion`: gate non-essential motion behind `@media (prefers-reduced-motion: no-preference)`.
+</div>
 
 ---
 
-## Pre-built Components
+HermesPet 是一个常驻在 MacBook **顶部刘海下方**的 AI 聊天客户端 + 桌面伴侣。
 
-Before implementing UI features, check if these components already exist:
+**最重要的一点**：装上就能用，不需要在你电脑上装任何命令行工具。打开 → 选个 AI 服务商（DeepSeek / 智谱 / Kimi / MiniMax / OpenAI / OpenClaw / 你自己的云端 Gateway）→ 粘贴 API Key → 开聊。如果你额外装了 `claude` / `codex` CLI，App 会自动检测出来并解锁"读写本地文件 / 跑命令 / 生图"这些高级能力。
 
-Maps:
-- `client/src/components/Map.tsx` - Google Maps integration with proxy authentication. Provides MapView component with onMapReady callback for initializing Google Maps services (Places, Geocoder, Directions, Drawing, etc.). All map functionality works directly in the browser.
+按一下刘海呼出聊天窗、按住 `⌘⇧V` 说话、拖文件给小家伙吃掉、让 fomo 小狐狸在桌面闲逛嗅你的文件、AI 完成任务时灵动岛右耳画一个 Face ID 风的对勾 ✓ —— **桌面 AI 应当鲜活**。界面现已支持**中文 / English 一键即时切换**。
 
-When implementing features that match these categories, MUST evaluate the component first to decide whether to use or customize it.
-
----
-
-## 🗺️ Maps Integration
-
-**CRITICAL: The Manus proxy provides FULL access to ALL Google Maps features** - including advanced drawing, heatmaps, Street View, all layers, Places API, etc. Do NOT ask users for Google Map API keys - authentication is automatic.
-
-**Implementation:**
-- Frontend: Import MapView from `client/src/components/Map.tsx` and initialize ANY Google Maps service (geocoding, directions, places, drawing, visualization, geometry, etc.) in the onMapReady callback. ALL Google Maps JavaScript API features work directly in the browser.
-
-NEVER use external map libraries or request API keys from users - the Manus proxy handles everything automatically with no feature limitations.
+> Swift 6 · SwiftUI · macOS 14+ · 纯原生（无 Electron / 无 Web view） · Apache-2.0 开源
 
 ---
 
-## ✅ Launch Checklist
-- [ ] UI layout and navigation structure correct, all image src valid.
-- [ ] Success + error paths verified in the browser
+## ✨ 核心亮点
+
+### 🔀 6 种 AI 引擎，真正同时跑
+
+不是切换，是**真正并行**。每个对话独立绑定一个 AI 引擎，第一条消息发出后锁定，最多挂 8 个对话同时跑（`⌘1`~`⌘8` 秒切）。你可以一边让 Claude 改代码、一边让在线 AI 翻译文档、一边等 Codex 生图 —— **后台跑完时灵动岛对应位置呼吸发光提醒**，不用守着屏幕。
+
+| 引擎 | 适用 | 准备 |
+|---|---|---|
+| ☁️ **在线 AI** ⭐ | DeepSeek / 智谱 / Kimi / MiniMax / OpenAI —— 一键选服务商粘 Key | DMG 内嵌 opencode runtime，**零依赖开箱即用** |
+| ⚡ **OpenClaw** | 局域网网关式 AI 平台接入 | 装 [OpenClaw](https://openclaw.ai)（npm 一行）→ 自动检测 + 零配置首连 |
+| ✦ **Hermes Gateway** | 接任何 **OpenAI 兼容 HTTP 端点**（自部署 / 云端 / vLLM / Ollama） | 填 baseURL + Key，内置三档 preset，模型从 `/v1/models` 自动拉 |
+| ⌨️ **Claude Code** | 改文件 / 跑命令 / 深度编程 | 装 [`claude` CLI](https://docs.claude.com/en/docs/agents-and-tools/claude-code/overview)（可选） |
+| ✨ **Codex** | 写代码 + 原生生图（多图视觉） | 装 [`codex` CLI](https://github.com/openai/codex)（可选） |
+| 🧩 **QwenCode** | 通义千问 qwen 用户**零 Key 零配置**（复用终端登录态） | 装 `qwen` CLI 并登录 → 自动检测解锁 |
+
+**新用户默认只见"在线 AI"模式**（最简单），其他五个 mode 装好对应工具后**自动检测并解锁**，不需要手动开关 —— 小白也能用。**用户的意图永远 > 自动检测**，启用过的 mode 可随时在设置里独立关掉。
+
+### 🦊 6 只像素桌宠 · 跟着 mode 切
+
+每个 AI 模式都有自己的**专属像素桌宠**，活在你菜单栏底下：
+
+| 桌宠 | 所属 mode | 性格 |
+|---|---|---|
+| 🦞 **Clawd** | Claude Code | 橙色像素小螃蟹，最早一只，爱在桌面闲逛嗅图标 |
+| ☁️ **云朵** | 在线 AI | indigo 小精灵，戴眼镜认真看你拖的图 |
+| 🦊 **fomo** | OpenClaw | 月光银白九尾狐，灵动的大耳朵抖个不停 |
+| 🐴 **Pegasus** | Hermes | 金黄飞马，四脚 trot 步态 + 鬃毛随风 |
+| ⌨️ **coco** | Codex | 钢铁侠风像素小机器人 |
+| 👓 **小青怪** | QwenCode | 青绿色、戴黑框圆眼镜的小怪兽，零配置接入 qwen |
+
+桌宠不只是装饰：
+
+- 🍽 **拖文件给桌宠** → 它嚼嚼吞下 → 文件自动作为附件发到当前对话
+- 👃 **拖桌宠到桌面图标** → 它停下嗅一嗅 → AI 给文件名一句 ≤10 字短评
+- 🌀 **跨灵动岛传送门**：桌宠走到刘海下方触发**像素艺术风传送门动画**（八边形门框 + 旋转星点 + mode 主色脉冲），从灵动岛另一侧穿出
+- 🛡 文件名进 AI 前过本地黑名单（薪资 / 合同 / 密码 / `.env` 等敏感词整条跳过）
+
+### 🏔 灵动岛 = 操作系统级状态显示（含工具权限确认）
+
+刘海下方那个胶囊**不是装饰**，是 HermesPet 真正的"心脏"：
+
+- **左耳** 桌宠精灵跟当前 mode 实时切（6 只独立动画）
+- **右耳** 工具运行实时状态：旋转脉冲 → 步骤数 → 文件变更数 → 完成时 **Face ID 风格画线对勾 ✓**
+- **鼠标 hover 像水滴展开** —— 胶囊从刘海正下方润下来，展示 mode 主色 + 模型名 + 最近回复预览
+- 🛡 **工具权限实时确认**：Claude / Codex 要在你电脑上**写文件 / 跑命令**时，灵动岛下方**紧贴**弹一张黑色卡片（视觉上跟刘海无缝衔接），让你看清工具名 + 主要参数，三按钮 **[拒绝 / 允许 / 总是允许]**，决策后 banner 反馈。聊天窗开着时这套 UI 自动迁移到顶条接管，桌宠切"举手求救"姿势 —— **HermesPet 不会替你做主**
+- 💬 **AI 回复摘要卡**：聊天窗关着时，AI 回复完成后灵动岛下方弹摘要卡 8 秒，[复制 / 查看完整]，错过的回复也不会真的错过
+- 🎙 **语音字幕条**：按住 `⌘⇧V` 时灵动岛下方实时显示语音识别字幕
+- 📊 **系统信息轮播**：右耳轮播实时**内存 / CPU / 网速 / 温度**，鼠标悬停灵动岛展开看全部指标
+- ❌ **错误态**整个胶囊切琥珀色 + 点击重试 · 📸 **截屏快门** 0.18s 白色闪光 · 🌊 **后台对话**对应胶囊位置呼吸式微微发光
+
+### 🎙 语音说话 · 📎 拖文件 · 💬 多对话
+
+**按住任意 app 说话（`⌘⇧V` Push-to-Talk）**：屏幕边缘出现 **Apple Intelligence 风格彩色光环** + 灵动岛右耳脉冲红色麦克风 + 实时识别字幕，中文走 **SFSpeechRecognizer**（macOS 离线模型），松开自动发送、回复完成"叮"一声。
+
+**拖文件给 AI · 让 AI 自己按需读**：不是把整个 PDF 塞进 context，而是把**绝对路径**拼到 prompt 末尾，Claude / Codex 用自己的 Read / Bash 工具**按需读哪几页** —— 省 context、省 token、更精准。**在线 AI 现在也能读 PDF（v1.2.15 新）**：把 PDF 拖进聊天框就能让它读懂、总结、问答，拍照 / 扫描版自动 OCR 识别文字。图片支持四路输入：**剪贴板粘贴 / 拖拽 / `⌘⇧J` 截屏 / Codex 直接生图**。
+
+**多对话 · 跨 AI 共享上下文（绝活）**：同时最多 **8 个对话**（`⌘N` 新建 / `⌘[` `⌘]` 切换 / `⌘1`~`⌘8` 直达），每个独立绑定 mode 绝不互相污染；**切 mode 时整段历史传给新模型** —— 让 Claude 接着看 Hermes 刚聊的内容，反之亦然。
+
+### 🌌 知识云图 · 永不遗忘的对话宇宙（v1.3.0 全新 · 杀手锏）
+
+别家 AI 客户端给你一条**越翻越长、越翻越累**的侧边栏列表。HermesPet 给你一片**会呼吸的星空**。
+
+按一下 **`⌘⇧G`**，全屏「知识云图」从桌面浮起 —— 你跟 AI 聊过的**每一段对话都是一颗发光的星**，聊得越深越亮越大；相似主题被**关键词引力自动拉成一个个星团**（健身、旅行、代码、那个折腾了三天的 bug……），团心浮着主题名，一眼看清"我到底跟 AI 聊过些什么"。鼠标扫过一颗星，**只有它的关联线亮起**、其余隐入深空；点一下，**瞬间回到那段对话**接着聊。液态玻璃质感 + mode 主色辉光 + 入场如花绽开 —— 这不是对话列表，是**你和 AI 一起想过的事，第一次被画成一张地图**。
+
+底层是三件一起上的硬功夫：
+
+- **🗂 对话永不丢失**：所有聊过的对话进**永久本地库**（`history.sqlite`，独立于工作集、永不自动删）。以前开满 8 个挤掉最旧的就没了，现在**全在** —— 随时翻、关键词搜（本地中文分词，"上次聊崩溃那个"也搜得到）。
+- **🧠 越聊越懂你**：跨对话的长期记忆在你**空闲时自动修订**，换哪个引擎它都接着懂你，不用每次重新交代背景。
+- **⭐ 加星置顶 + 🗄 自动归档**：重要对话加颗星，在云图里**放大、镀金、永不被淹没**；超 90 天没碰的琐碎对话**自动沉入归档**（不删、随时一键召回）。数据越攒越多，画面始终清爽 —— **库里存得下一万条，眼前只留最该看的那些**。
+
+> 全程本地、零上传。"回访 / 加星 / 显著度"这套信号让 HermesPet 越用越懂你的节奏，而决定权永远在你手里。
+
+### 🆕 v1.4 新能力 · 越来越像一个"会陪你干活的伙伴"
+
+- 🎙 **语音陪聊（`⌘⇧L`）**：唤起一颗悬浮在刘海下的胶囊，跟 AI **连续语音对话**（听 → 想 → 说 自动循环）。"在听"时是一片会呼吸流动的**星云粒子**，安静好看；它开口时**正在念的词逐个点亮**，像歌词跟读，眼睛能精确跟上它念到哪。
+- 📝 **AI 笔记（`⌘⇧N`）+ 写作模式**：桌宠陪你写的**本地 Markdown 笔记本**（三栏窗），边写边让 AI 接续 / 改写 / 整理；写作模式带实时预览。
+- 🚀 **全量模式 · 舰队工作流（Beta）**：把一个任务交给一支**有职位分工的"AI 公司"** —— 队长先反问几句澄清目标，再把活拆给调研 / 文案 / 工程 / 质检等多个 AI **并行开干**，满屏"舰队剧场"实时看每路进度，最后汇总成一篇交付。
+- 🎬 **会议纪要**：录音 → 自动分段转写 → AI 整理成结构化纪要。
+- 👁 **屏幕看 + 操作（实验）**：让 AI **看你的屏幕**（截屏 + OCR）并能**动手操作**（移动鼠标 / 点击 / 输入），帮你接管重复操作。
+- 🐣 **桌宠养成**：你用 AI 干活，桌宠跟着**涨经验、升级、变心情**，未来还能解锁 / 收集更多形象。
+
+### 📋 AI 任务规划派发 · 📰 跨天记忆 + 每日陪伴
+
+让 AI 帮你**规划任务并直接派发**给最合适的 AI：你说"帮我列一下今天要做的事"，AI 回一个 ```` ```tasks ```` YAML 块，客户端自动渲染成**可操作卡片**，每张卡 3 个按钮 —— 📌 **Pin** 到桌面（勾完打码不消失）/ 🤖 **让 AI 做**（自动新建对话派发给推荐 mode）/ ✗ **跳过**。不只是聊天客户端，是**任务调度入口**。
+
+它还**默默记得你**（v1.2.13 起更进一步）：本地记录你用了哪些 app / 拖了什么文件 / 问了 AI 什么（全本地 SQLite，敏感词整条丢弃），在合适的时候温温地陪你回顾：
+
+- 🌅 **每日早报**：早上启动时 AI 反向看一遍昨天，生成 Markdown 简报并**主动续接**（"昨天你在调 SwiftUI 动画 —— 要不要我把关键方案 Pin 到桌面？"）
+- 🎉 **周报 + 里程碑**：每周回顾一次，认识满 30 / 100 / 365 天会有特别的小庆祝
+- 🧠 **跨模式共享记忆**：一份**用户可编辑、全部引擎共享**的本地记忆，切到任何引擎它都"接着懂你"（设置 → 隐私里可编辑 / 清空 / 关闭）
+
+> 所有意图数据**全部在本地、不出机器**，可一键导出 JSON / 清空 / 拉黑某个 app。
+
+### 🌐 中英双语界面（v1.2.13 新）· 🔄 自动更新 · 🛡 防伪验证
+
+- 🌐 **整套界面中英双语**：设置里一键切 **中文 / English**，**即时生效、无需重启**；连 AI 的聊天回复都会**自动跟着你选的语言走**；新用户首次打开就能选语言
+- 🔄 **应用内自动更新**：启动 60s 后 + 每 24h 自动检查 GitHub Release，有新版菜单栏 🔵 提示，点「下载并安装」→ 后台拉 DMG → 自动挂载 → Finder 引导（**不靠 Sparkle、不收集任何遥测**）
+- 🛡 **官方版本验证**：设置 → 关于 → 一键 codesign 校验，正版显示原作者 Team ID `R34KL4X4D9`（防盗用 / 防冒名）
+- 🚨 **崩溃一键上报**：扫描崩溃日志 → 一键复制到剪贴板 + 跳 GitHub Issue 新建页（**零后端、零隐私顾虑**）
+
+### 🎨 还有一堆顺手的细节
+
+**Markdown** 完整渲染（GFM 表格 + 编号列表转可点卡片 + 代码块带"复制"）· **Pin 桌面卡片**把任意 AI 回答钉到桌面 · **快问浮窗焕新（v1.2.14）** `⌘⇧Space` Spotlight 风不开聊天窗也能问，换上 iOS 26 液态玻璃外观，还能**圈选屏幕任意区域识别文字**交给 AI · **聊天窗直接粘贴图片** · **上下文用量进度条**这轮还能聊多久一目了然 · **输入栏严格按 Apple HIG**（Capsule + iMessage 风）· **聊天字号 5 档可调**（`⌘+` / `⌘-` / `⌘0`）· **窗口置顶**随手切 · **Dock 图标可选**（默认菜单栏 agent 风格不占 Dock）· **5 个事件提示音**可独立开关 + 拖入自定义音频。
 
 ---
 
-## Core File References
+<div align="center">
 
-`package.json`
-```tsx
-{
-  "name": "hermes-pet-site",
-  "version": "1.0.0",
-  "type": "module",
-  "license": "MIT",
-  "scripts": {
-    "dev": "vite --host",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-    "start": "NODE_ENV=production node dist/index.js",
-    "preview": "vite preview --host",
-    "check": "tsc --noEmit",
-    "format": "prettier --write ."
-  },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
-    "@radix-ui/react-accordion": "^1.2.12",
-    "@radix-ui/react-alert-dialog": "^1.1.15",
-    "@radix-ui/react-aspect-ratio": "^1.1.7",
-    "@radix-ui/react-avatar": "^1.1.10",
-    "@radix-ui/react-checkbox": "^1.3.3",
-    "@radix-ui/react-collapsible": "^1.1.12",
-    "@radix-ui/react-context-menu": "^2.2.16",
-    "@radix-ui/react-dialog": "^1.1.15",
-    "@radix-ui/react-dropdown-menu": "^2.1.16",
-    "@radix-ui/react-hover-card": "^1.1.15",
-    "@radix-ui/react-label": "^2.1.7",
-    "@radix-ui/react-menubar": "^1.1.16",
-    "@radix-ui/react-navigation-menu": "^1.2.14",
-    "@radix-ui/react-popover": "^1.1.15",
-    "@radix-ui/react-progress": "^1.1.7",
-    "@radix-ui/react-radio-group": "^1.3.8",
-    "@radix-ui/react-scroll-area": "^1.2.10",
-    "@radix-ui/react-select": "^2.2.6",
-    "@radix-ui/react-separator": "^1.1.7",
-    "@radix-ui/react-slider": "^1.3.6",
-    "@radix-ui/react-slot": "^1.2.3",
-    "@radix-ui/react-switch": "^1.2.6",
-    "@radix-ui/react-tabs": "^1.1.13",
-    "@radix-ui/react-toggle": "^1.1.10",
-    "@radix-ui/react-toggle-group": "^1.1.11",
-    "@radix-ui/react-tooltip": "^1.2.8",
-    "axios": "^1.12.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
-    "embla-carousel-react": "^8.6.0",
-    "express": "^4.21.2",
-    "framer-motion": "^12.23.22",
-    "input-otp": "^1.4.2",
-    "lucide-react": "^0.453.0",
-    "nanoid": "^5.1.5",
-    "next-themes": "^0.4.6",
-    "react": "^19.2.1",
-    "react-day-picker": "^9.11.1",
-    "react-dom": "^19.2.1",
-    "react-hook-form": "^7.64.0",
-    "react-resizable-panels": "^3.0.6",
-    "recharts": "^2.15.2",
-    "sonner": "^2.0.7",
-    "streamdown": "^1.4.0",
-    "tailwind-merge": "^3.3.1",
-    "tailwindcss-animate": "^1.0.7",
-    "vaul": "^1.1.2",
-    "wouter": "^3.3.5",
-    "zod": "^4.1.12"
-  },
-  "devDependencies": {
-    "@builder.io/vite-plugin-jsx-loc": "^0.1.1",
-    "@tailwindcss/typography": "^0.5.15",
-    "@tailwindcss/vite": "^4.1.3",
-    "@types/express": "4.17.21",
-    "@types/google.maps": "^3.58.1",
-    "@types/node": "^24.7.0",
-    "@types/react": "^19.2.1",
-    "@types/react-dom": "^19.2.1",
-    "@vitejs/plugin-react": "^5.0.4",
-    "add": "^2.0.6",
-    "autoprefixer": "^10.4.20",
-    "esbuild": "^0.25.0",
-    "pnpm": "^10.15.1",
-    "postcss": "^8.4.47",
-    "prettier": "^3.6.2",
-    "tailwindcss": "^4.1.14",
-    "tsx": "^4.19.1",
-    "tw-animate-css": "^1.4.0",
-    "typescript": "5.6.3",
-    "vite": "^7.1.7",
-    "vite-plugin-manus-runtime": "^0.0.57",
-    "vitest": "^2.1.4"
-  },
-  "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af",
-  "pnpm": {
-    "patchedDependencies": {
-      "wouter@3.7.1": "patches/wouter@3.7.1.patch"
-    },
-    "overrides": {
-      "tailwindcss>nanoid": "3.3.7"
-    }
-  }
-}
-```
+## 💬 加作者微信 · 交个朋友
 
-`client/src/App.tsx`
-```tsx
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+独立开发不易，欢迎扫码加我 —— 有 Bug 反馈、功能建议、合作想法，或者只是想聊聊都可以（备注 **HermesPet** 我会更快通过）👇
 
+<img src="docs/wechat-qr.jpg" alt="作者微信二维码 · 苗青山（浙江杭州）" width="240" />
 
-function Router() {
-  return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+<sub>苗青山 · 浙江杭州 · 扫码添加，备注「HermesPet」</sub>
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
+</div>
 
-function App() {
-  return (
-    <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
-  );
-}
-
-export default App;
-```
-
-`client/src/pages/Home.tsx`
-```tsx
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
-
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Best Practices, Design Guide and Common Pitfalls
- */
-export default function Home() {
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
-  );
-}
-```
-
-`client/src/index.css`
-```tsx
-@import "tailwindcss";
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
-:root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
-}
-
-.dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  button:not(:disabled),
-  [role="button"]:not([aria-disabled="true"]),
-  [type="button"]:not(:disabled),
-  [type="submit"]:not(:disabled),
-  [type="reset"]:not(:disabled),
-  a[href],
-  select:not(:disabled),
-  input[type="checkbox"]:not(:disabled),
-  input[type="radio"]:not(:disabled) {
-    @apply cursor-pointer;
-  }
-}
-
-@layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
-  .container {
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
-    padding-right: 1rem;
-  }
-
-  .flex {
-    min-height: 0;
-    min-width: 0;
-  }
-
-  @media (min-width: 640px) {
-    .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
-      padding-right: 1.5rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .container {
-      padding-left: 2rem; /* 32px - desktop padding */
-      padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
-    }
-  }
-}
-```
-
-`client/index.html`
-```tsx
-<!doctype html>
-<html lang="en">
-
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>{{project_title}}</title>    
-    <!-- THIS IS THE START OF A COMMENT BLOCK, BLOCK TO BE DELETED: Google Fonts here, example:
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    THIS IS THE END OF A COMMENT BLOCK, BLOCK TO BE DELETED -->
-  </head>
-
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script
-      defer
-      src="%VITE_ANALYTICS_ENDPOINT%/umami"
-      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
-  </body>
-
-</html>
-```
-
-`server/index.ts`
-```tsx
-import express from "express";
-import { createServer } from "http";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-async function startServer() {
-  const app = express();
-  const server = createServer(app);
-
-  // Serve static files from dist/public in production
-  const staticPath =
-    process.env.NODE_ENV === "production"
-      ? path.resolve(__dirname, "public")
-      : path.resolve(__dirname, "..", "dist", "public");
-
-  app.use(express.static(staticPath));
-
-  // Handle client-side routing - serve index.html for all routes
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(staticPath, "index.html"));
-  });
-
-  const port = process.env.PORT || 3000;
-
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
-  });
-}
-
-startServer().catch(console.error);
-```
 ---
 
-## Common Pitfalls
+## 🚀 快速开始
 
-### Infinite loading loops from unstable references
-**Anti-pattern:** Creating new objects/arrays in render that are used as query inputs
-```tsx
-// ❌ Bad: New Date() creates new reference every render → infinite queries
-const { data } = trpc.items.getByDate.useQuery({
-  date: new Date(), // ← New object every render!
-});
+### 方式 A：下载 DMG 直接装（推荐，无需 Xcode · 3 分钟开聊）
 
-// ❌ Bad: Array/object literals in query input
-const { data } = trpc.items.getByIds.useQuery({
-  ids: [1, 2, 3], // ← New array reference every render!
-});
+1. 去 [Releases 页面](https://github.com/basionwang-bot/HermesPet/releases) 下载最新 DMG（**Apple Silicon / Intel 双份**，按你的芯片选；不确定就点  → 关于本机看「芯片」那行）
+2. 双击 DMG → 把"Hermes 桌宠"拖进应用程序
+3. **从启动台 / Spotlight 双击打开即可** —— 已经过 Apple 公证，不会被 Gatekeeper 拦
+4. 菜单栏点图标 → 齿轮 ⚙️ → AI 后端 → **服务商下拉选一家** → 粘贴 API Key → 开聊
+
+没有 API Key？设置面板里每个服务商旁都有一个**"获取 Key"链接**直达官方申请页。
+
+### 方式 B：从源码构建（开发者）
+
+需要 macOS 14+ 和 Xcode 命令行工具：
+
+```bash
+git clone https://github.com/basionwang-bot/HermesPet.git
+cd HermesPet
+./install.sh
 ```
 
-**Correct approach:** Stabilize references with useState/useMemo
-```tsx
-// ✅ Good: Initialize once with useState
-const [date] = useState(() => new Date());
-const { data } = trpc.items.getByDate.useQuery({ date });
+| 脚本 | 用途 |
+|---|---|
+| `./build.sh` | 仅构建 `.app` 到 `./HermesPet.app` |
+| `./install.sh` | 构建 + 装到 `/Applications` + 启动（**日常用这个**） |
+| `./make-dmg.sh` | 生成给别人分发的 DMG（Developer ID 签名 + Apple 公证，双击直开） |
 
-// ✅ Good: Memoize complex inputs
-const ids = useMemo(() => [1, 2, 3], []);
-const { data } = trpc.items.getByIds.useQuery({ ids });
-```
+> 三个脚本都用 **Developer ID 证书 + Hardened Runtime** 签名（有证书时），TCC 权限永久稳定 —— "本机装的 == 用户下载的"。
 
-**Why this happens:** TRPC queries trigger when input references change. Objects/arrays created in render have new references each time, causing infinite re-fetches.
+### 进阶：解锁更多 AI 引擎（全部可选）
 
-### Navigation dead-ends in subpages
-**Problem:** Creating nested routes without escape routes—no header nav, no sidebar, no back button.
+四个进阶引擎都是**可选**的，装了能解锁更强能力，不装也完全能用在线 AI 聊天：
 
-**Root cause:** Implementing individual pages before establishing global layout structure.
+| 引擎 | 安装命令 | 解锁能力 |
+|---|---|---|
+| **OpenClaw** | `npm i -g openclaw@latest && openclaw onboard --install-daemon` | 网关式 AI 平台 + 多模型聚合 |
+| **Hermes Gateway** | 自部署任何 OpenAI 兼容 API（或填云端 baseURL） | 接公司内部 LLM / vLLM / Ollama |
+| **Claude Code** | [官方安装指南](https://docs.claude.com/en/docs/agents-and-tools/claude-code/overview) | 文件读写 + 跑命令 + 深度编程 |
+| **OpenAI Codex** | [官方仓库](https://github.com/openai/codex) | 生图 + 多图视觉 + 代码 |
 
-**Solution:** Define layout wrapper in App.tsx first, then build pages inside it. For admin tools use DashboardLayout; for detail pages add back button with `router.back()`.
+装好后**重启 HermesPet 自动检测路径**（启动时跑一次 `zsh -lic 'command -v ...'`，能读到你 `~/.zshrc` 真实 PATH）。检测不到就进设置对应 mode 卡片点"重新检测"。
 
-### Invisible text from theme/color mismatches
+### 首次授权
 
-**Root cause:** Semantic colors (`bg-background`, `text-foreground`) are CSS variables that resolve based on ThemeProvider's active theme. Mismatches cause invisible text.
+| 权限 | 触发时机 | 用途 |
+|---|---|---|
+| 屏幕录制 | 首次 `⌘⇧J` 截图 | ScreenCaptureKit |
+| 麦克风 + 语音识别 | 首次 `⌘⇧V` | 录音 + SFSpeechRecognizer |
+| Accessibility | 快问浮窗读选中文本 | AX API |
+| Finder 自动化 | 开启"Clawd 桌面巡视" | osascript 读桌面图标 |
 
-**Two critical rules:**
+授权完任一权限后建议**完全退出再打开**（菜单栏图标 → 退出 → 重开），新进程才能读到权限。
 
-1. **Match theme to CSS variables:** If `defaultTheme="dark"` in App.tsx, ensure `.dark {}` in index.css has dark background + light foreground values
-2. **Always pair bg with text:** When using `bg-{semantic}`, MUST also use `text-{semantic}-foreground` (not automatic - text inherits from parent otherwise)
+---
 
-**Quick reference:**
-```tsx
-// ✅ Theme + CSS alignment
-<ThemeProvider defaultTheme="dark">  {/* Must match .dark in index.css */}
-  <div className="bg-background text-foreground">...</div>
-</ThemeProvider>
+## 🎯 在线 AI：十余家服务商开箱即用
 
-// ✅ Required class pairs
-<div className="bg-popover text-popover-foreground">...</div>
-<div className="bg-card text-card-foreground">...</div>
-<div className="bg-accent text-accent-foreground">...</div>
-```
+「在线 AI」是新用户默认、零依赖的主力模式。内置 **DeepSeek / 智谱 / Kimi / MiniMax / OpenAI / 通义千问 / 豆包 / 混元 / 文心 / Gemini / Grok / Mistral 等十余家**主流 LLM 预设（**客户端启动自动从云端拉取最新清单 —— 新增服务商不用更新 App**），**回复偏好 3 档可切**（快速 / 平衡 / 深度），自动映射到对应模型；DMG 内嵌 opencode runtime 处理 SSE / 推理过滤 / 工具调用：
 
-### Nested anchor tags in Link components
-**Problem:** Wrapping `<a>` tags inside another `<a>` or wouter's `<Link>` creates nested anchors and runtime errors.
+| 服务商 | 默认模型 | 注册入口 |
+|---|---|---|
+| DeepSeek | deepseek-chat | [platform.deepseek.com](https://platform.deepseek.com) |
+| 智谱 GLM | glm-4-flash | [open.bigmodel.cn](https://open.bigmodel.cn) |
+| Moonshot Kimi | moonshot-v1-8k | [platform.moonshot.cn](https://platform.moonshot.cn) |
+| MiniMax | MiniMax-M2.7 | [platform.minimaxi.com](https://platform.minimaxi.com) |
+| OpenAI | gpt-4o-mini | [platform.openai.com](https://platform.openai.com) |
+| 自定义 | 你填 | 任意 OpenAI 兼容端点 |
 
-**Solution:** Pass children directly to Link—it already renders an `<a>` internally.
-```tsx
-// ❌ Bad: <Link><a>...</a></Link> or <a><a>...</a></a>
-// ✅ Good: <Link>...</Link> or just <a>...</a>
-```
-### Empty `Select.Item` values
+每家服务商的 **API Key 独立保存**（不会跨服务商串号），切换时自动写入对应 baseURL。**每个 mode 的配置完全独立保存**，新建对话继承"上次用的" mode，**5 分钟新手就能上手**。
 
-**Rule:** Every `<Select.Item>` must have a non-empty `value` prop—never `""`, `undefined`, or omitted.
+---
 
-**Rule:** Use sonner for toasts; do not add react-toastify or @radix-ui/react-toast
+## ⌨️ 快捷键
 
-**Rule:** If you put placeholder components for App.tsx routes, you MUST replace them with actual components after your implementation.
+**全局热键**（在任何 app 里都能触发）：
+
+| 组合 | 功能 |
+|---|---|
+| `⌘⇧H` | 呼出 / 收回聊天窗口 |
+| `⌘⇧J` | 截当前屏幕并附加到对话 |
+| `⌘⇧V` | 按住说话，松开自动发送 |
+| `⌘⇧P` | 把当前对话最新 AI 回复 Pin 到桌面 |
+| `⌘⇧Space` | Spotlight 风快问浮窗 |
+| `⌘⇧L` | 语音陪聊（连续语音对话） |
+| `⌘⇧N` | AI 笔记本 |
+| `⌘⇧G` | 知识云图 |
+
+**聊天窗内**（窗口聚焦时）：`⌘N` 新建对话 · `⌘[` / `⌘]` 切换上一/下一对话 · `⌘1`~`⌘8` 直达对应对话 · `⌘⌫` 关闭当前对话 · `⌘+` / `⌘-` / `⌘0` 调字号。
+
+---
+
+## 🗂 数据存储 / 隐私
+
+| 路径 | 内容 |
+|---|---|
+| `~/.hermespet/conversations.json` | 所有对话历史（不含图片 Data） |
+| `~/.hermespet/images/` | 用户附图 / Codex 生图持久化 |
+| `~/.hermespet/pins.json` | Pin 桌面卡片 |
+| `~/.hermespet/activity.sqlite` | 活动采集 + 用户意图记录（早报 / 记忆数据源） |
+| `~/Library/Caches/HermesPet/` | 截图临时区 + 桌宠临时缓存 |
+
+**隐私边界**（HermesPet 把"不收集"做成了硬约束）：
+
+- 🛡 **零遥测**：项目本身不上送任何数据到任何后端。AI 调用都走你自己配的后端（你的 API Key / 你的自部署 Gateway / 你本地的 CLI）
+- 🛡 **桌面巡视黑名单**：文件名进 AI 前过本地黑名单（薪资 / 合同 / 密码 / `.env` / `credentials` 等关键词整条丢弃）
+- 🛡 **活动采集 + 共享记忆 全本地**：早报 / 记忆数据全部在本地 SQLite **不出机器**；设置里可一键导出 JSON / 清空记录 / 拉黑某个 app / 编辑或关闭共享记忆
+- 🛡 **崩溃日志**：扫描本机崩溃文件 → 一键复制到剪贴板 → **你**手动粘贴到 Issue，HermesPet 不会自动上传任何东西
+
+> 技术决策细节（踩过的坑 / Swift 6 isolation / macOS layout cycle）见 [CLAUDE.md](./CLAUDE.md)，路线图见 [TODO.md](./TODO.md)。纯原生 Swift，无 Electron。
+
+---
+
+## 🤝 欢迎一起来玩 · 请我喝杯咖啡
+
+HermesPet 是我业余时间一个人维护的开源项目，每一个 issue / PR / star 都是真的能让我开心半天的那种支持。
+
+- 🐞 **有 Bug / 用得不顺 / 想要某个功能**：直接开 [Issue](https://github.com/basionwang-bot/HermesPet/issues) 说说就行，描述清楚机型 + 系统版本 + 复现步骤，我会尽快看
+- 🛠 **想动手改代码**：开干前建议先开 issue 聊聊方向，避免做出来跟项目走向不一致；代码风格跟着现有文件写就好
+- ⭐ **用着觉得不错**：点个 Star 或分享给可能感兴趣的朋友 —— 让更多人用上是这个项目最大的成就感来源
+
+> 💡 想把 HermesPet 用在公司内部、定制成你们品牌的 macOS AI 工具？欢迎邮件聊：[basionwang@gmail.com](mailto:basionwang@gmail.com)
+
+---
+
+## 📄 License
+
+[Apache License 2.0](./LICENSE) —— 使用本项目代码时，您**必须**保留原始版权声明和 [NOTICE](./NOTICE) 归属信息、明确标注修改，且**不得使用 HermesPet 的名称 / 商标 / Logo 暗示与原项目的关联或背书**。
+
+详见 [NOTICE](./NOTICE) · [品牌使用指南](./BRAND_GUIDELINES.md) · [贡献指南](./CONTRIBUTING.md)
+
+### ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=basionwang-bot/HermesPet&type=Date)](https://star-history.com/#basionwang-bot/HermesPet&Date)
+
+---
+
+<div align="center">
+
+Made with ✦ on a MacBook · 桌面 AI 应当鲜活
+
+---
+
+© 2024–2026 [Basion Wang](https://github.com/basionwang-bot). All rights reserved.
+
+HermesPet 是 Basion Wang 的原创作品。未经授权的复制、修改或分发行为将被追究法律责任。
+
+</div>
