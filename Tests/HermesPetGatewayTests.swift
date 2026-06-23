@@ -1,42 +1,12 @@
 import Foundation
+import Testing
+@testable import HermesPet
 
-@main
-struct HermesPetGatewayTestsRunner {
-    static func main() async {
-        let tests: [(String, () async throws -> Void)] = [
-            ("stream error includes model and upstream message", testStreamErrorIncludesModelAndUpstreamMessage),
-            ("single-model gateway marks unavailable and can suggest auto-switch", testSingleModelGatewayMarksUnavailableAndCanSuggestAutoSwitch),
-            ("multi-model gateway does not auto-select first", testMultiModelGatewayDoesNotAutoSelectFirstModel),
-            ("stream_options compatibility retries once without stream_options", testStreamOptionsCompatibilityRetriesOnceWithoutStreamOptions),
-            ("model not found does not trigger stream_options retry", testModelNotFoundDoesNotTriggerStreamOptionsRetry),
-            ("diagnostic logs do not leak api key or authorization header", testDiagnosticLogsDoNotLeakApiKeyOrAuthorizationHeader)
-        ]
-
-        var failures: [(String, String)] = []
-        for (name, body) in tests {
-            do {
-                URLProtocolStub.reset()
-                try await body()
-                print("PASS \(name)")
-            } catch {
-                failures.append((name, String(describing: error)))
-                fputs("FAIL \(name): \(error)\n", stderr)
-            }
-        }
-
-        if failures.isEmpty {
-            print("All HermesPetGatewayTests passed (\(tests.count) cases).")
-            exit(EXIT_SUCCESS)
-        }
-
-        fputs("\n\(failures.count) HermesPetGatewayTests failed.\n", stderr)
-        for (name, message) in failures {
-            fputs("- \(name): \(message)\n", stderr)
-        }
-        exit(EXIT_FAILURE)
-    }
-
-    private static func testStreamErrorIncludesModelAndUpstreamMessage() async throws {
+@Suite("Hermes Gateway Compatibility", .serialized)
+struct HermesPetGatewayTests {
+    @Test("模型不存在时错误文本包含 HTTP 状态、模型名和上游 message")
+    func streamErrorIncludesModelAndUpstreamMessage() async throws {
+        URLProtocolStub.reset()
         URLProtocolStub.requestHandler = { request in
             let body = #"{"error":{"message":"model \"hermes-agent\" not found"}}"#
             return (
@@ -49,20 +19,22 @@ struct HermesPetGatewayTestsRunner {
         let stream = client.streamCompletion(messages: [ChatMessage(role: .user, content: "hi")])
 
         do {
-            _ = try await collectStream(stream)
-            throw TestFailure("expected stream to fail")
+            for try await _ in stream {}
+            Issue.record("Expected stream to fail")
         } catch {
             let message = error.localizedDescription
-            try expect(message.contains("Gateway HTTP 400"), "missing HTTP status: \(message)")
-            try expect(message.contains("模型：hermes-agent"), "missing model name: \(message)")
-            try expect(message.contains(#"model "hermes-agent" not found"#), "missing upstream error: \(message)")
+            #expect(message.contains("Gateway HTTP 400"))
+            #expect(message.contains("模型：hermes-agent"))
+            #expect(message.contains(#"model "hermes-agent" not found"#))
         }
     }
 
-    private static func testSingleModelGatewayMarksUnavailableAndCanSuggestAutoSwitch() async throws {
+    @Test("单模型 Gateway 返回 unavailable")
+    func singleModelGatewayMarksUnavailable() async {
+        URLProtocolStub.reset()
         let data = #"{"data":[{"id":"deepseek-v4-flash"}]}"#
         URLProtocolStub.requestHandler = { request in
-            try expect(request.url!.absoluteString.hasSuffix("/models"), "expected /models request")
+            #expect(request.url!.absoluteString.hasSuffix("/models"))
             return (
                 HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
                 Data(data.utf8)
@@ -76,18 +48,17 @@ struct HermesPetGatewayTestsRunner {
             session: makeSession()
         )
 
-        try expect(
+        #expect(
             result == GatewayModelValidationResult(
                 validation: .unavailable(current: "hermes-agent", available: ["deepseek-v4-flash"]),
                 availableModels: ["deepseek-v4-flash"]
-            ),
-            "unexpected validation result: \(result)"
+            )
         )
-        try expect(result.availableModels.count == 1, "expected exactly one model")
-        try expect(result.availableModels.first == "deepseek-v4-flash", "unexpected single model")
     }
 
-    private static func testMultiModelGatewayDoesNotAutoSelectFirstModel() async throws {
+    @Test("多模型 Gateway 不自动选择第一项")
+    func multiModelGatewayDoesNotAutoSelectFirstModel() async {
+        URLProtocolStub.reset()
         let data = #"{"data":[{"id":"deepseek-v4-flash"},{"id":"gpt-4.1-mini"}]}"#
         URLProtocolStub.requestHandler = { request in
             (
@@ -103,16 +74,17 @@ struct HermesPetGatewayTestsRunner {
             session: makeSession()
         )
 
-        try expect(
+        #expect(
             result == GatewayModelValidationResult(
                 validation: .unavailable(current: "hermes-agent", available: ["deepseek-v4-flash", "gpt-4.1-mini"]),
                 availableModels: ["deepseek-v4-flash", "gpt-4.1-mini"]
-            ),
-            "unexpected multi-model validation: \(result)"
+            )
         )
     }
 
-    private static func testStreamOptionsCompatibilityRetriesOnceWithoutStreamOptions() async throws {
+    @Test("stream_options 不支持时只降级重试一次")
+    func streamOptionsCompatibilityRetriesOnceWithoutStreamOptions() async throws {
+        URLProtocolStub.reset()
         let requestBodies = StringStore()
         URLProtocolStub.requestHandler = { request in
             let body = readBody(from: request)
@@ -145,15 +117,17 @@ struct HermesPetGatewayTestsRunner {
         let firstJSON = try parseJSONObject(from: bodies[0])
         let secondJSON = try parseJSONObject(from: bodies[1])
 
-        try expect(text == "ok", "unexpected stream text: \(text)")
-        try expect(bodies.count == 2, "expected exactly two requests, got \(bodies.count)")
-        try expect((firstJSON["stream"] as? Bool) == true, "first request missing stream flag: \(bodies[0])")
+        #expect(text == "ok")
+        #expect(bodies.count == 2)
+        #expect((firstJSON["stream"] as? Bool) == true)
         let firstStreamOptions = firstJSON["stream_options"] as? [String: Any]
-        try expect((firstStreamOptions?["include_usage"] as? Bool) == true, "first request missing include_usage flag: \(bodies[0])")
-        try expect(secondJSON["stream_options"] == nil, "retry request still contains stream_options: \(bodies[1])")
+        #expect((firstStreamOptions?["include_usage"] as? Bool) == true)
+        #expect(secondJSON["stream_options"] == nil)
     }
 
-    private static func testModelNotFoundDoesNotTriggerStreamOptionsRetry() async throws {
+    @Test("模型不存在时不触发兼容重试")
+    func modelNotFoundDoesNotTriggerStreamOptionsRetry() async throws {
+        URLProtocolStub.reset()
         let requestCount = Counter()
         URLProtocolStub.requestHandler = { request in
             requestCount.increment()
@@ -168,20 +142,48 @@ struct HermesPetGatewayTestsRunner {
         let stream = client.streamCompletion(messages: [ChatMessage(role: .user, content: "hi")])
 
         do {
-            _ = try await collectStream(stream)
-            throw TestFailure("expected model-not-found stream to fail")
+            for try await _ in stream {}
+            Issue.record("Expected stream to fail")
         } catch {
-            try expect(requestCount.value == 1, "unexpected retry count: \(requestCount.value)")
-            try expect(error.localizedDescription.contains("model hermes-agent not found"), "missing upstream error text")
+            #expect(requestCount.value == 1)
+            #expect(error.localizedDescription.contains("model hermes-agent not found"))
         }
     }
 
-    private static func testDiagnosticLogsDoNotLeakApiKeyOrAuthorizationHeader() async throws {
-        let logs = StringStore()
+    @Test("非 stream_options 参数错误不触发兼容重试")
+    func invalidModelParameterDoesNotTriggerRetry() async throws {
+        URLProtocolStub.reset()
+        let requestCount = Counter()
         URLProtocolStub.requestHandler = { request in
-            let error = #"{"error":{"message":"Authorization: Bearer super-secret-key unknown parameter stream_options /Users/jack/private.txt"}}"#
+            requestCount.increment()
+            let error = #"{"error":{"message":"invalid parameter: model"}}"#
             return (
                 HTTPURLResponse(url: request.url!, statusCode: 400, httpVersion: nil, headerFields: nil)!,
+                Data(error.utf8)
+            )
+        }
+
+        let client = makeClient(model: "hermes-agent")
+        let stream = client.streamCompletion(messages: [ChatMessage(role: .user, content: "hi")])
+
+        do {
+            for try await _ in stream {}
+            Issue.record("Expected stream to fail")
+        } catch {
+            #expect(requestCount.value == 1)
+            #expect(error.localizedDescription.contains("invalid parameter: model"))
+        }
+    }
+
+    @Test("诊断日志不泄漏 API Key、Authorization Header 或绝对路径")
+    func diagnosticLogsDoNotLeakApiKeyOrAuthorizationHeader() async throws {
+        URLProtocolStub.reset()
+        let logs = StringStore()
+
+        URLProtocolStub.requestHandler = { _ in
+            let error = #"{"error":{"message":"Authorization: Bearer super-secret-key /Users/jack/private.txt stream_options unsupported"}}"#
+            return (
+                HTTPURLResponse(url: URL(string: "http://localhost:8642/v1/chat/completions")!, statusCode: 400, httpVersion: nil, headerFields: nil)!,
                 Data(error.utf8)
             )
         }
@@ -201,18 +203,57 @@ struct HermesPetGatewayTestsRunner {
 
         let stream = client.streamCompletion(messages: [ChatMessage(role: .user, content: "hi")])
         do {
-            _ = try await collectStream(stream)
-            throw TestFailure("expected diagnostic case to fail")
+            for try await _ in stream {}
+            Issue.record("Expected stream to fail")
         } catch {
             let combined = logs.snapshot().joined(separator: "\n")
-            try expect(!combined.contains("super-secret-key"), "log leaked raw API key")
-            try expect(!combined.contains("Authorization: Bearer super-secret-key"), "log leaked authorization header")
-            try expect(combined.contains("Authorization: Bearer [REDACTED]"), "redacted authorization text missing")
-            try expect(combined.contains("<path>"), "path redaction missing")
+            #expect(!combined.contains("super-secret-key"))
+            #expect(!combined.contains("Authorization: Bearer super-secret-key"))
+            #expect(combined.contains("Authorization: Bearer [REDACTED]"))
+            #expect(combined.contains("<path>"))
         }
     }
 
-    private static func makeClient(model: String) -> APIClient {
+    @Test("超长错误正文不会突破 4096 字节上限")
+    func oversizedErrorBodyIsClampedTo4096() async throws {
+        URLProtocolStub.reset()
+        let logs = StringStore()
+        let longMessage = String(repeating: "x", count: 5000)
+        let responseBody = #"{"error":{"message":""# + longMessage + #"""}}"#
+
+        URLProtocolStub.requestHandler = { _ in
+            (
+                HTTPURLResponse(url: URL(string: "http://localhost:8642/v1/chat/completions")!, statusCode: 400, httpVersion: nil, headerFields: nil)!,
+                Data(responseBody.utf8)
+            )
+        }
+
+        let client = APIClient(
+            source: .hermes,
+            session: makeSession(),
+            configOverride: .init(
+                baseURL: "http://localhost:8642/v1",
+                apiKey: "",
+                modelName: "hermes-agent"
+            ),
+            diagnosticLogger: { line in
+                logs.append(line)
+            }
+        )
+
+        let stream = client.streamCompletion(messages: [ChatMessage(role: .user, content: "hi")])
+        do {
+            for try await _ in stream {}
+            Issue.record("Expected stream to fail")
+        } catch {
+            let message = error.localizedDescription
+            #expect(message.count < 4300)
+            let combined = logs.snapshot().joined(separator: "\n")
+            #expect(combined.count < 4300)
+        }
+    }
+
+    private func makeClient(model: String) -> APIClient {
         APIClient(
             source: .hermes,
             session: makeSession(),
@@ -224,13 +265,13 @@ struct HermesPetGatewayTestsRunner {
         )
     }
 
-    private static func makeSession() -> URLSession {
+    private func makeSession() -> URLSession {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [URLProtocolStub.self]
         return URLSession(configuration: config)
     }
 
-    private static func collectStream(_ stream: AsyncThrowingStream<String, Error>) async throws -> String {
+    private func collectStream(_ stream: AsyncThrowingStream<String, Error>) async throws -> String {
         var output = ""
         for try await chunk in stream {
             output += chunk
@@ -238,7 +279,7 @@ struct HermesPetGatewayTestsRunner {
         return output
     }
 
-    private static func readBody(from request: URLRequest) -> String {
+    private func readBody(from request: URLRequest) -> String {
         if let data = request.httpBody, let text = String(data: data, encoding: .utf8) {
             return text
         }
@@ -261,30 +302,23 @@ struct HermesPetGatewayTestsRunner {
         return String(data: data, encoding: .utf8) ?? ""
     }
 
-    private static func expect(_ condition: @autoclosure () -> Bool, _ message: String) throws {
-        if !condition() {
-            throw TestFailure(message)
-        }
-    }
-
-    private static func parseJSONObject(from text: String) throws -> [String: Any] {
+    private func parseJSONObject(from text: String) throws -> [String: Any] {
         guard
             let data = text.data(using: .utf8),
             let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         else {
-            throw TestFailure("request body is not valid JSON: \(text)")
+            throw ProbeError.invalidJSON(text)
         }
         return object
     }
 }
 
-private struct TestFailure: Error, CustomStringConvertible {
-    let description: String
-    init(_ description: String) { self.description = description }
+private enum ProbeError: Error {
+    case invalidJSON(String)
 }
 
 private final class URLProtocolStub: URLProtocol {
-    nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    nonisolated(unsafe) static var requestHandler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))?
 
     static func reset() {
         requestHandler = nil

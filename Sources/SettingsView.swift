@@ -271,6 +271,7 @@ struct SettingsView: View {
     @State private var hermesFetchingModels = false
     @State private var hermesModelFetchError: String?
     @State private var hermesModelPendingValidation = false
+    @State private var hermesValidationNotice: HermesValidationNotice?
     /// 本地档"高级"折叠区是否展开（Key / 模型 默认折叠）
     @State private var hermesAdvancedExpanded: Bool = false
     /// 自动启动 hermes gateway 开关（持久化 key 在 HermesGatewayManager.autoStartKey）
@@ -318,6 +319,9 @@ struct SettingsView: View {
             // 云端/自定义档：保留完整输入框
             if selectedHermesPreset.id == "hermes-local" {
                 hermesGatewayStatusCard
+                if let notice = hermesValidationNotice {
+                    hermesValidationNoticeCard(notice)
+                }
                 hermesLocalAdvancedSection
             } else {
                 settingRow(L("settings.backend.hermes.apiURL")) {
@@ -328,6 +332,7 @@ struct SettingsView: View {
                             hermesAvailableModels = []
                             hermesModelFetchError = nil
                             hermesModelPendingValidation = true
+                            hermesValidationNotice = nil
                         }
                 }
                 hermesKeyRow
@@ -837,6 +842,40 @@ struct SettingsView: View {
         }
     }
 
+    private func hermesValidationNoticeCard(_ notice: HermesValidationNotice) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: notice.iconName)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(notice.tint)
+                Text(notice.title)
+                    .font(.system(size: 12, weight: .semibold))
+                Spacer()
+            }
+
+            Text(notice.message)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if notice.showModelPickerEntry {
+                Button("打开模型选择") {
+                    hermesAdvancedExpanded = true
+                }
+                .controlSize(.small)
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(notice.tint.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(notice.tint.opacity(0.22), lineWidth: 0.5)
+        )
+    }
+
     /// 1s tick 重渲染 Gateway 状态卡片（spawn 进度可视化）
     private func startGatewayStatusTimer() {
         // 防叠加：两张卡片（Hermes 本地档 / OpenClaw）onAppear 都会进来，先停旧的再起新的
@@ -888,6 +927,13 @@ struct SettingsView: View {
         hermesAvailableModels = []
         hermesModelFetchError = "待校验当前 Gateway 的模型兼容性…"
         hermesModelPendingValidation = true
+        hermesValidationNotice = HermesValidationNotice(
+            title: "待校验模型兼容性",
+            message: "正在检查当前 Gateway 是否支持模型 \(viewModel.modelName)。",
+            tint: .orange,
+            iconName: "clock.badge.exclamationmark",
+            showModelPickerEntry: false
+        )
         testResult = nil
         fetchHermesModels()
     }
@@ -897,6 +943,13 @@ struct SettingsView: View {
         hermesFetchingModels = true
         hermesModelPendingValidation = true
         hermesModelFetchError = "待校验当前 Gateway 的模型兼容性…"
+        hermesValidationNotice = HermesValidationNotice(
+            title: "待校验模型兼容性",
+            message: "正在检查当前 Gateway 是否支持模型 \(viewModel.modelName)。",
+            tint: .orange,
+            iconName: "clock.badge.exclamationmark",
+            showModelPickerEntry: false
+        )
         let client = APIClient(source: .hermes)
         Task {
             let validation = await client.validateConfiguredModel()
@@ -908,6 +961,7 @@ struct SettingsView: View {
                 switch validation.validation {
                 case .valid:
                     hermesModelFetchError = nil
+                    hermesValidationNotice = nil
                 case .unavailable(let current, let available):
                     if available.count == 1, let only = available.first {
                         viewModel.modelName = only
@@ -916,17 +970,45 @@ struct SettingsView: View {
                         } else {
                             hermesModelFetchError = "模型 \(current) 不存在，已自动切换为唯一可用模型 \(only)。"
                         }
+                        hermesValidationNotice = HermesValidationNotice(
+                            title: "模型已自动切换",
+                            message: "当前 Gateway 仅提供模型 \(only)，已自动切换为该模型。",
+                            tint: .orange,
+                            iconName: "arrow.triangle.swap",
+                            showModelPickerEntry: false
+                        )
                     } else if available.isEmpty {
                         hermesModelFetchError = "未从 Gateway 获取到可用模型列表。"
+                        hermesValidationNotice = HermesValidationNotice(
+                            title: "模型列表为空",
+                            message: "Gateway 已响应 /models，但没有返回可用模型。",
+                            tint: .orange,
+                            iconName: "exclamationmark.triangle.fill",
+                            showModelPickerEntry: true
+                        )
                     } else {
                         if current == "hermes-agent" && selectedHermesPreset.id == "hermes-local" {
                             hermesModelFetchError = "本地 Gateway 不提供默认模型 hermes-agent。可用模型：\(available.joined(separator: ", "))"
                         } else {
                             hermesModelFetchError = "当前模型 \(current) 不在新 Gateway 中。可用模型：\(available.joined(separator: ", "))。请手动选择。"
                         }
+                        hermesValidationNotice = HermesValidationNotice(
+                            title: "当前模型无效",
+                            message: "当前模型 \(current) 不在 Gateway 的模型列表中。可用模型：\(available.joined(separator: ", "))。",
+                            tint: .orange,
+                            iconName: "exclamationmark.triangle.fill",
+                            showModelPickerEntry: true
+                        )
                     }
                 case .unknown(let reason):
                     hermesModelFetchError = reason.map { "未验证模型兼容性：\($0)" } ?? "未验证模型兼容性。"
+                    hermesValidationNotice = HermesValidationNotice(
+                        title: "未验证模型兼容性",
+                        message: reason.map { "Gateway 未提供兼容的 /models 校验：\($0)" } ?? "Gateway 未提供兼容的 /models 校验，当前模型暂未验证。",
+                        tint: .secondary,
+                        iconName: "questionmark.circle",
+                        showModelPickerEntry: false
+                    )
                 }
             }
         }
@@ -4034,6 +4116,14 @@ struct SettingsView: View {
         }
         return error.localizedDescription
     }
+}
+
+private struct HermesValidationNotice {
+    let title: String
+    let message: String
+    let tint: Color
+    let iconName: String
+    let showModelPickerEntry: Bool
 }
 
 // MARK: - 快捷键录制按钮

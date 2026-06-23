@@ -17,6 +17,8 @@ actor APIIdleClock {
 /// 两种 mode 的 URL / key / 模型名分别存在不同 UserDefaults key，避免相互覆盖。
 /// 实例化时传入对应的 `ConfigSource` 决定读哪一套配置。
 final class APIClient: @unchecked Sendable {
+    private static let gatewayErrorBodyLimit = 4096
+
     struct RuntimeConfig {
         let baseURL: String
         let apiKey: String
@@ -579,7 +581,7 @@ final class APIClient: @unchecked Sendable {
         var data = Data()
         for try await byte in bytes {
             data.append(byte)
-            if data.count >= 32_768 { break }
+            if data.count >= gatewayErrorBodyLimit { break }
         }
         return data
     }
@@ -612,7 +614,7 @@ final class APIClient: @unchecked Sendable {
         return nil
     }
 
-    static func sanitizeForDisplay(_ text: String, limit: Int = 4096) -> String {
+    static func sanitizeForDisplay(_ text: String, limit: Int = gatewayErrorBodyLimit) -> String {
         var sanitized = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if sanitized.isEmpty { return "上游未返回错误正文" }
 
@@ -646,11 +648,7 @@ final class APIClient: @unchecked Sendable {
     static func shouldRetryWithoutUsageOptions(statusCode: Int, body: String) -> Bool {
         guard statusCode == 400 else { return false }
         let lower = body.lowercased()
-        return lower.contains("stream_options")
-            || lower.contains("include_usage")
-            || lower.contains("unsupported parameter")
-            || lower.contains("unknown field")
-            || lower.contains("invalid parameter")
+        return lower.contains("stream_options") || lower.contains("include_usage")
     }
 
     static func makeGatewayErrorMessage(statusCode: Int, model: String, upstreamSummary: String) -> String {
