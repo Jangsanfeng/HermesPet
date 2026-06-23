@@ -7,7 +7,7 @@ let package = Package(
         .macOS(.v14)
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-testing.git", exact: "6.3.2")
+        .package(url: "https://github.com/apple/swift-testing.git", exact: "6.2.4")
     ],
     targets: [
         .executableTarget(
@@ -23,11 +23,7 @@ let package = Package(
                 "HermesPet",
                 .product(name: "Testing", package: "swift-testing")
             ],
-            path: "Tests",
-            exclude: ["run-gateway-tests.sh"],
-            linkerSettings: [
-                .unsafeFlags(["-L", "TestSupport/TestingInterop/lib"])
-            ]
+            path: "Tests"
         )
     ]
 )
