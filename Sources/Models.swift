@@ -664,6 +664,9 @@ enum APIError: LocalizedError {
         case .invalidResponse:
             return "服务器返回了无效的响应"
         case .httpError(let code, let body):
+            if body.hasPrefix("Gateway HTTP ") || body.hasPrefix("HTTP \(code)") {
+                return body
+            }
             return "HTTP \(code): \(body)"
         case .decodingError(let msg):
             return "数据解析失败: \(msg)"

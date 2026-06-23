@@ -17,6 +17,13 @@ actor APIIdleClock {
 /// 两种 mode 的 URL / key / 模型名分别存在不同 UserDefaults key，避免相互覆盖。
 /// 实例化时传入对应的 `ConfigSource` 决定读哪一套配置。
 final class APIClient: @unchecked Sendable {
+    struct RuntimeConfig {
+        let baseURL: String
+        let apiKey: String
+        let modelName: String
+    }
+
+    typealias DiagnosticLogger = @Sendable (String) -> Void
 
     /// 配置来源 —— 决定 baseURL / apiKey / modelName 从哪些 UserDefaults key 读，
     /// 以及"没配置时的兜底默认值"。
@@ -161,15 +168,27 @@ final class APIClient: @unchecked Sendable {
     }
 
     let source: ConfigSource
+    private let session: URLSession
+    private let configOverride: RuntimeConfig?
+    private let diagnosticLogger: DiagnosticLogger
 
-    init(source: ConfigSource = .hermes) {
+    init(
+        source: ConfigSource = .hermes,
+        session: URLSession? = nil,
+        configOverride: RuntimeConfig? = nil,
+        diagnosticLogger: @escaping DiagnosticLogger = { NSLog("%@", $0) }
+    ) {
         self.source = source
+        self.session = session ?? Self.makeURLSession()
+        self.configOverride = configOverride
+        self.diagnosticLogger = diagnosticLogger
     }
 
     private var baseURL: String {
-        UserDefaults.standard.string(forKey: source.baseURLKey) ?? source.defaultBaseURL
+        configOverride?.baseURL ?? (UserDefaults.standard.string(forKey: source.baseURLKey) ?? source.defaultBaseURL)
     }
     private var apiKey: String {
+        if let overridden = configOverride?.apiKey { return overridden }
         switch source {
         case .hermes:
             return UserDefaults.standard.string(forKey: source.apiKeyKey) ?? ""
@@ -197,7 +216,7 @@ final class APIClient: @unchecked Sendable {
         }
     }
     private var modelName: String {
-        UserDefaults.standard.string(forKey: source.modelNameKey) ?? source.defaultModel
+        configOverride?.modelName ?? (UserDefaults.standard.string(forKey: source.modelNameKey) ?? source.defaultModel)
     }
 
     /// 把一条消息转成发给 API 的文本。
@@ -215,7 +234,7 @@ final class APIClient: @unchecked Sendable {
         return text
     }
 
-    private let session: URLSession = {
+    private static func makeURLSession() -> URLSession {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 180
         // ⭐ 整条请求的墙钟硬上限。原来 300s 会把全量模式里走 delegate_task 的长任务(实测 300~440s)
@@ -224,7 +243,7 @@ final class APIClient: @unchecked Sendable {
         // gateway_timeout:1800。真·装死仍由 90s idle watchdog(streamIdleTimeoutSeconds)兜底,不会无限挂。
         config.timeoutIntervalForResource = 1800
         return URLSession(configuration: config)
-    }()
+    }
 
     // MARK: - Streaming
 
@@ -260,22 +279,13 @@ final class APIClient: @unchecked Sendable {
                     apiMessages.append(contentsOf: messages.map {
                         APIMessage(role: $0.role.rawValue, text: self.messageText(for: $0), images: $0.images)
                     })
-                    let body = ChatCompletionRequest(
-                        model: self.modelName,
+                    let streamResult = try await self.startStreamingRequest(
+                        request: request,
                         messages: apiMessages,
-                        stream: true,
-                        streamOptions: StreamOptions(include_usage: true)
+                        allowUsageOptions: true,
+                        allowCompatibilityRetry: self.source == .hermes
                     )
-                    request.httpBody = try JSONEncoder().encode(body)
-
-                    let (bytes, response) = try await self.session.bytes(for: request)
-
-                    guard let httpResponse = response as? HTTPURLResponse else {
-                        throw APIError.invalidResponse
-                    }
-                    guard httpResponse.statusCode == 200 else {
-                        throw APIError.httpError(statusCode: httpResponse.statusCode, body: "stream failed")
-                    }
+                    let bytes = streamResult.bytes
 
                     var reportedModel = false
                     for try await line in bytes.lines {
@@ -451,12 +461,19 @@ final class APIClient: @unchecked Sendable {
             let body = String(data: data, encoding: .utf8) ?? ""
             throw APIError.httpError(statusCode: httpResp.statusCode, body: String(body.prefix(120)))
         }
-        struct ModelsResponse: Decodable {
-            struct Item: Decodable { let id: String }
-            let data: [Item]
+        guard let models = GatewayModelValidator.parseAvailableModels(from: data) else {
+            throw APIError.decodingError("模型列表格式不兼容")
         }
-        let parsed = try JSONDecoder().decode(ModelsResponse.self, from: data)
-        return parsed.data.map(\.id).sorted()
+        return models
+    }
+
+    func validateConfiguredModel() async -> GatewayModelValidationResult {
+        await GatewayModelValidator.validate(
+            baseURL: baseURL,
+            apiKey: apiKey,
+            currentModel: modelName,
+            session: session
+        )
     }
 
     private func makeHealthURL() throws -> URL {
@@ -489,5 +506,176 @@ final class APIClient: @unchecked Sendable {
 
     private static func directAPIKeyStorageKey(providerID: String) -> String {
         "directAPIKey.\(providerID)"
+    }
+
+    private struct StreamStartResult {
+        let bytes: URLSession.AsyncBytes
+        let downgraded: Bool
+    }
+
+    private func startStreamingRequest(
+        request: URLRequest,
+        messages: [APIMessage],
+        allowUsageOptions: Bool,
+        allowCompatibilityRetry: Bool
+    ) async throws -> StreamStartResult {
+        var streamRequest = request
+        let body = ChatCompletionRequest(
+            model: modelName,
+            messages: messages,
+            stream: true,
+            streamOptions: allowUsageOptions ? StreamOptions(include_usage: true) : nil
+        )
+        streamRequest.httpBody = try JSONEncoder().encode(body)
+
+        let (bytes, response) = try await self.session.bytes(for: streamRequest)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard httpResponse.statusCode != 200 else {
+            return StreamStartResult(bytes: bytes, downgraded: !allowUsageOptions)
+        }
+
+        let errorData = try await Self.collectData(from: bytes)
+        let sanitizedBody = Self.sanitizeForDisplay(String(data: errorData, encoding: .utf8) ?? "")
+        let upstreamSummary = Self.extractReadableError(from: errorData) ?? sanitizedBody
+
+        if allowCompatibilityRetry,
+           allowUsageOptions,
+           Self.shouldRetryWithoutUsageOptions(statusCode: httpResponse.statusCode, body: sanitizedBody) {
+            logGatewayDiagnostic(
+                statusCode: httpResponse.statusCode,
+                sanitizedBody: sanitizedBody,
+                downgraded: true
+            )
+            return try await startStreamingRequest(
+                request: request,
+                messages: messages,
+                allowUsageOptions: false,
+                allowCompatibilityRetry: false
+            )
+        }
+
+        logGatewayDiagnostic(statusCode: httpResponse.statusCode, sanitizedBody: sanitizedBody, downgraded: false)
+        throw APIError.httpError(
+            statusCode: httpResponse.statusCode,
+            body: Self.makeGatewayErrorMessage(
+                statusCode: httpResponse.statusCode,
+                model: modelName,
+                upstreamSummary: Self.sanitizeForDisplay(upstreamSummary)
+            )
+        )
+    }
+
+    private func logGatewayDiagnostic(statusCode: Int, sanitizedBody: String, downgraded: Bool) {
+        let location = Self.baseLocationString(baseURL: baseURL)
+        let downgradeText = downgraded ? " downgrade=stream_options->none" : ""
+        diagnosticLogger(
+            "[GatewayCompat] source=\(source.logLabel) base=\(location) model=\(Self.sanitizeForDisplay(modelName)) status=\(statusCode)\(downgradeText) body=\(sanitizedBody)"
+        )
+    }
+
+    private static func collectData(from bytes: URLSession.AsyncBytes) async throws -> Data {
+        var data = Data()
+        for try await byte in bytes {
+            data.append(byte)
+            if data.count >= 32_768 { break }
+        }
+        return data
+    }
+
+    static func extractReadableError(from data: Data) -> String? {
+        guard let json = try? JSONSerialization.jsonObject(with: data) else {
+            let raw = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return raw?.isEmpty == false ? raw : nil
+        }
+        if let dict = json as? [String: Any] {
+            if let error = dict["error"] as? [String: Any],
+               let message = firstNonEmptyString(in: error, keys: ["message", "detail"]) {
+                return message
+            }
+            if let message = firstNonEmptyString(in: dict, keys: ["message", "detail"]) {
+                return message
+            }
+        }
+        let raw = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return raw?.isEmpty == false ? raw : nil
+    }
+
+    private static func firstNonEmptyString(in dict: [String: Any], keys: [String]) -> String? {
+        for key in keys {
+            if let value = dict[key] as? String {
+                let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty { return trimmed }
+            }
+        }
+        return nil
+    }
+
+    static func sanitizeForDisplay(_ text: String, limit: Int = 4096) -> String {
+        var sanitized = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if sanitized.isEmpty { return "上游未返回错误正文" }
+
+        sanitized = sanitized.replacingOccurrences(
+            of: #"Authorization\s*:\s*Bearer\s+[A-Za-z0-9._\-]+"#,
+            with: "Authorization: Bearer [REDACTED]",
+            options: .regularExpression
+        )
+        sanitized = sanitized.replacingOccurrences(
+            of: #"Bearer\s+[A-Za-z0-9._\-]+"#,
+            with: "Bearer [REDACTED]",
+            options: .regularExpression
+        )
+        sanitized = sanitized.replacingOccurrences(
+            of: #""api[_-]?key"\s*:\s*"[^"]+""#,
+            with: #""api_key":"[REDACTED]""#,
+            options: .regularExpression
+        )
+        sanitized = sanitized.replacingOccurrences(
+            of: #"/(?:Users|home|var|tmp|private|Volumes|opt|Applications|System)[^\s"']*"#,
+            with: "<path>",
+            options: .regularExpression
+        )
+
+        if sanitized.count > limit {
+            sanitized = String(sanitized.prefix(limit))
+        }
+        return sanitized
+    }
+
+    static func shouldRetryWithoutUsageOptions(statusCode: Int, body: String) -> Bool {
+        guard statusCode == 400 else { return false }
+        let lower = body.lowercased()
+        return lower.contains("stream_options")
+            || lower.contains("include_usage")
+            || lower.contains("unsupported parameter")
+            || lower.contains("unknown field")
+            || lower.contains("invalid parameter")
+    }
+
+    static func makeGatewayErrorMessage(statusCode: Int, model: String, upstreamSummary: String) -> String {
+        """
+        Gateway HTTP \(statusCode)
+        模型：\(sanitizeForDisplay(model, limit: 256))
+        上游错误：\(sanitizeForDisplay(upstreamSummary))
+        """
+    }
+
+    static func baseLocationString(baseURL: String) -> String {
+        guard let url = URL(string: baseURL) else { return "invalid-base-url" }
+        let host = url.host ?? "unknown-host"
+        let path = url.path.isEmpty ? "/" : url.path
+        return "\(host)\(path)"
+    }
+}
+
+private extension APIClient.ConfigSource {
+    var logLabel: String {
+        switch self {
+        case .hermes: return "hermes"
+        case .direct: return "direct"
+        case .openclaw: return "openclaw"
+        case .qwen: return "qwen"
+        }
     }
 }

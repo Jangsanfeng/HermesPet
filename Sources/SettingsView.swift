@@ -270,6 +270,7 @@ struct SettingsView: View {
     @State private var hermesAvailableModels: [String] = []
     @State private var hermesFetchingModels = false
     @State private var hermesModelFetchError: String?
+    @State private var hermesModelPendingValidation = false
     /// 本地档"高级"折叠区是否展开（Key / 模型 默认折叠）
     @State private var hermesAdvancedExpanded: Bool = false
     /// 自动启动 hermes gateway 开关（持久化 key 在 HermesGatewayManager.autoStartKey）
@@ -326,6 +327,7 @@ struct SettingsView: View {
                         .onChange(of: viewModel.apiBaseURL) { _, _ in
                             hermesAvailableModels = []
                             hermesModelFetchError = nil
+                            hermesModelPendingValidation = true
                         }
                 }
                 hermesKeyRow
@@ -830,7 +832,7 @@ struct SettingsView: View {
             Text(err)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
+                .lineLimit(2)
                 .truncationMode(.tail)
         }
     }
@@ -875,9 +877,6 @@ struct SettingsView: View {
         if preset.id == "hermes-local" {
             // 本地档：强制写默认值，让用户无需手填
             viewModel.apiBaseURL = preset.baseURL
-            if viewModel.modelName.isEmpty {
-                viewModel.modelName = preset.defaultModel
-            }
         } else if preset.id == "hermes-cloud" {
             // 云端档：如果当前还是 localhost，清掉让用户重填
             if viewModel.apiBaseURL.contains("localhost") || viewModel.apiBaseURL.contains("127.0.0.1") {
@@ -887,29 +886,49 @@ struct SettingsView: View {
         // 持久化用户选的预设档位
         UserDefaults.standard.set(preset.id, forKey: "hermesPresetID")
         hermesAvailableModels = []
-        hermesModelFetchError = nil
+        hermesModelFetchError = "待校验当前 Gateway 的模型兼容性…"
+        hermesModelPendingValidation = true
         testResult = nil
+        fetchHermesModels()
     }
 
     /// 从 baseURL/v1/models 拉模型列表（H3）
     private func fetchHermesModels() {
         hermesFetchingModels = true
-        hermesModelFetchError = nil
+        hermesModelPendingValidation = true
+        hermesModelFetchError = "待校验当前 Gateway 的模型兼容性…"
         let client = APIClient(source: .hermes)
         Task {
-            do {
-                let models = try await client.fetchModels()
-                hermesAvailableModels = models
-                if models.isEmpty {
-                    hermesModelFetchError = L("settings.backend.hermes.modelFetchEmpty")
-                } else if viewModel.modelName.isEmpty || !models.contains(viewModel.modelName) {
-                    // 当前 modelName 不在列表里 → 自动选第一个
-                    viewModel.modelName = models[0]
+            let validation = await client.validateConfiguredModel()
+            await MainActor.run {
+                hermesAvailableModels = validation.availableModels
+                hermesFetchingModels = false
+                hermesModelPendingValidation = false
+
+                switch validation.validation {
+                case .valid:
+                    hermesModelFetchError = nil
+                case .unavailable(let current, let available):
+                    if available.count == 1, let only = available.first {
+                        viewModel.modelName = only
+                        if current == "hermes-agent" && selectedHermesPreset.id == "hermes-local" {
+                            hermesModelFetchError = "本地 Gateway 不提供默认模型 hermes-agent，已自动切换为 \(only)。"
+                        } else {
+                            hermesModelFetchError = "模型 \(current) 不存在，已自动切换为唯一可用模型 \(only)。"
+                        }
+                    } else if available.isEmpty {
+                        hermesModelFetchError = "未从 Gateway 获取到可用模型列表。"
+                    } else {
+                        if current == "hermes-agent" && selectedHermesPreset.id == "hermes-local" {
+                            hermesModelFetchError = "本地 Gateway 不提供默认模型 hermes-agent。可用模型：\(available.joined(separator: ", "))"
+                        } else {
+                            hermesModelFetchError = "当前模型 \(current) 不在新 Gateway 中。可用模型：\(available.joined(separator: ", "))。请手动选择。"
+                        }
+                    }
+                case .unknown(let reason):
+                    hermesModelFetchError = reason.map { "未验证模型兼容性：\($0)" } ?? "未验证模型兼容性。"
                 }
-            } catch {
-                hermesModelFetchError = L("settings.backend.fetchFailed", error.localizedDescription)
             }
-            hermesFetchingModels = false
         }
     }
 
