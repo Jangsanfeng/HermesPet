@@ -2,14 +2,16 @@
 
 <img src="docs/banner.png" alt="HermesPet — Your AI desktop companion that lives under your MacBook's notch" width="100%" />
 
-<img src="docs/app-icon.png" alt="HermesPet App Icon" width="128" height="128" />
+# HermesPet
 
-# HermesPet 🐻‍❄️
+<img src="docs/app-icon.png" alt="HermesPet App Icon" width="30" height="30" />
 
-**An AI chat client living under your MacBook's notch · 6 parallel engines · 6 pixel pets keeping you company**
+**An AI chat client living under your MacBook's notch · 6 parallel engines · 6 pixel pets**
+**Now following you onto iPhone & Apple Watch**
 
 [![Website](https://img.shields.io/badge/website-hermespet.cc-7B68EE?logo=safari&logoColor=white)](https://hermespet.cc)
 [![macOS](https://img.shields.io/badge/macOS-14.0+-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
+[![iOS](https://img.shields.io/badge/iOS-+_watchOS-000000?logo=apple&logoColor=white)](https://www.apple.com/ios/)
 [![Swift](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)](https://www.swift.org/)
 [![Latest Release](https://img.shields.io/github/v/release/basionwang-bot/HermesPet?label=latest&color=success&logo=github)](https://github.com/basionwang-bot/HermesPet/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/basionwang-bot/HermesPet/total?label=downloads&color=blue)](https://github.com/basionwang-bot/HermesPet/releases)
@@ -17,9 +19,7 @@
 
 🌍 [中文](./README.md) · **English**
 
-### 📦 [Download the latest DMG →](https://github.com/basionwang-bot/HermesPet/releases/latest)
-
-### 🌐 [Visit the project site · hermespet.cc →](https://hermespet.cc)
+### 📦 [Download the latest DMG →](https://github.com/basionwang-bot/HermesPet/releases/latest) · 🌐 [Visit hermespet.cc →](https://hermespet.cc)
 
 Grab the macOS DMG · **double-click to install and open** (Apple-notarized) · pick a provider, paste an API key — **no command-line tools required**
 
@@ -71,17 +71,82 @@ Grab the macOS DMG · **double-click to install and open** (Apple-notarized) · 
 
 ---
 
-HermesPet is an AI chat client + desktop companion that lives **right below your MacBook's notch**.
+## What is this
+
+HermesPet is an AI chat client + desktop companion that lives **right below your MacBook's notch** — and now has **iPhone & Apple Watch companions** too.
 
 **The most important thing**: it works out of the box. No CLI tools required on your machine. Open it → pick an AI provider (DeepSeek / Zhipu / Kimi / MiniMax / OpenAI / OpenClaw / your own cloud gateway) → paste an API Key → start chatting. If you also have `claude` / `codex` CLIs installed, the app auto-detects them and unlocks advanced capabilities like "read/write local files / run commands / generate images".
 
-Tap the notch to summon the chat window, hold `⌘⇧V` to talk, drop files onto the little pet, watch fomo the nine-tailed fox wander your desktop, see the Dynamic Island draw a Face ID-style checkmark ✓ when the AI is done — **desktop AI should feel alive**. The entire interface now ships in **English / 中文 with instant in-app switching**.
+Tap the notch to summon the chat window, hold `⌘⇧V` to talk, drop files onto the little pet, watch fomo the nine-tailed fox wander your desktop, see the Dynamic Island draw a Face ID-style checkmark ✓ when the AI is done — **desktop AI should feel alive**. The interface ships in **English / 中文 with instant in-app switching**.
 
-> Swift 6 · SwiftUI · macOS 14+ · Pure native (no Electron / no Web view) · Apache-2.0 open source
+> Swift 6 · SwiftUI · macOS 14+ · iOS / watchOS · Pure native (no Electron / no Web view) · Apache-2.0 open source
+
+<div align="center">
+<img src="docs/desktop/chat.png" width="640" alt="HermesPet chat window · floating-glass skin + multi-conversation + daily briefing" />
+<br/><sub>Floating-glass chat window · top conversation pills for instant switching · shared context across AIs</sub>
+</div>
 
 ---
 
-## ✨ Highlights
+## 📱 One pet, following you across devices
+
+Not four separate apps — **four bodies of the same companion**: the Mac is the brain and hands that actually do the work, the iPhone is your pocket remote + second screen, the Apple Watch is a glance-able status dial. Heavy lifting always returns to the Mac; phone and watch do the four light things only — **look, ask, jot, hand off**.
+
+<table>
+<tr>
+<td align="center" width="33%">
+<img src="docs/mobile/welcome.png" width="220" alt="Phone home · daily briefing"/><br/>
+<sub><b>Home · daily companion</b><br/>Today's briefing at a glance<br/>+ favorite AI one tap away</sub>
+</td>
+<td align="center" width="33%">
+<img src="docs/mobile/taskboard.png" width="220" alt="Task board · remote-control the AI on your Mac"/><br/>
+<sub><b>Remote-control your Mac's AI</b><br/>See how far each agent got;<br/>approve risky actions from your phone</sub>
+</td>
+<td align="center" width="33%">
+<img src="docs/mobile/chat.png" width="220" alt="Pick up the chat on your phone"/><br/>
+<sub><b>Pick up the chat anywhere</b><br/>Choose a pet and command<br/>your Mac's AI on the go</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="33%">
+<img src="docs/mobile/skills.png" width="220" alt="Skills · run one in a sentence"/><br/>
+<sub><b>Run a skill in one sentence</b><br/>Polish / Translate / Summarize /<br/>Meeting minutes / Deep insight</sub>
+</td>
+<td align="center" width="33%">
+<img src="docs/mobile/drawer.png" width="220" alt="Task / Skills / Artifacts / Remote terminal"/><br/>
+<sub><b>Workbench in your pocket</b><br/>Task board · Skills · Artifacts<br/>Todo · Remote terminal</sub>
+</td>
+<td align="center" width="33%">
+<img src="docs/mobile/attach.png" width="220" alt="Toss a photo / file at it"/><br/>
+<sub><b>Toss anything at it</b><br/>Photo / Album / File<br/>/ Fleet mode / Remote terminal</sub>
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td align="center" width="180">
+<img src="docs/watch/home.png" width="160" alt="Apple Watch pet home"/><br/>
+<sub><b>⌚️ The pet on your wrist</b></sub>
+</td>
+<td>
+
+**Apple Watch**: all 6 pets on your watch face — switch with a flick, glance at how far your Mac's agent has gotten, get a haptic tap when a task is done.
+
+- 🔔 **Task progress on your phone**: iPhone Dynamic Island / Lock Screen show "which step the Mac's agent is on" via Live Activities
+- 🤝 **Hand off**: start on the Mac, pick it up on your phone — and vice versa
+- 📝 **Jot / snap and toss**: drop an idea or photo on the go; back at the Mac your pet has already handled it
+- ⌚️ **Wrist remote**: check status, get reminders, lift high-frequency taps off the keyboard
+
+</td>
+</tr>
+</table>
+
+> 📲 The phone & watch companions are built on Apple-native **CloudKit + Live Activities + Handoff** — your data syncs through your own iCloud, never through any third-party server.
+
+---
+
+## ✨ Highlights (macOS desktop)
 
 ### 🔀 6 AI engines, truly running in parallel
 
@@ -100,7 +165,12 @@ Not switching — **truly in parallel**. Each conversation independently binds t
 
 ### 🦊 6 pixel pets · one per AI mode
 
-Every AI mode gets its own **pixel-art pet** living in your menu bar:
+Every AI mode gets its own **pixel-art pet** living in your menu bar. They also **grow up**: egg → baby → prime → adult, gaining XP and shifting moods as you use the AI.
+
+<div align="center">
+<img src="tools/pet_preview.png" width="80%" alt="Pet growth / mood pixel sheet — egg / baby / prime / adult × moods" />
+<br/><sub>Growth stages × moods of one pet (shown: QwenCode "Little Teal")</sub>
+</div>
 
 | Pet | Mode | Vibe |
 |---|---|---|
@@ -122,6 +192,11 @@ Pets aren't just decoration:
 
 The capsule below the notch is the **heart** of HermesPet:
 
+<div align="center">
+<img src="docs/desktop/island.png" width="300" alt="Dynamic Island · pet + Face ID-style checkmark" />
+<br/><sub>Left-ear pet sprite · right-ear tool status · Face ID-style stroke checkmark ✓ on completion</sub>
+</div>
+
 - **Left ear** sprite follows the current mode in real time (6 independent animations)
 - **Right ear** real-time tool status: rotating pulse → step count → file change count → **Face ID-style stroke checkmark ✓** on completion
 - **Hover → water-drop expansion** — the capsule flows down from the notch, showing mode color + model name + recent reply preview
@@ -135,30 +210,35 @@ The capsule below the notch is the **heart** of HermesPet:
 
 **Push-to-talk from any app (`⌘⇧V`)**: an **Apple Intelligence-style colorful glow** appears at the screen edge + the right ear pulses a red microphone + a live transcript shows below the island. Speech uses **SFSpeechRecognizer** (macOS offline model); release to auto-send, with a "ding" when the AI finishes.
 
-**Drag files to AI · AI reads them on demand**: instead of stuffing the whole PDF into context, HermesPet appends the **absolute path** to the prompt and lets Claude / Codex **read just the pages they need** with their own Read / Bash tools — saving context, tokens, and time. **The online AI can now read PDFs too (new in v1.2.15)**: drop a PDF into chat and it can read, summarize, and answer from it — scanned / photographed PDFs are OCR'd automatically. Images support four input paths: **clipboard paste / drag / `⌘⇧J` screenshot / Codex direct generation**.
+**Drag files to AI · AI reads them on demand**: instead of stuffing the whole PDF into context, HermesPet appends the **absolute path** to the prompt and lets Claude / Codex **read just the pages they need** with their own Read / Bash tools — saving context, tokens, and time. **The online AI can read PDFs too**: drop a PDF into chat and it can read, summarize, and answer from it — scanned / photographed PDFs are OCR'd automatically. Images support four input paths: **clipboard paste / drag / `⌘⇧J` screenshot / Codex direct generation**.
 
 **Multi-conversation · cross-AI shared context (signature feature)**: up to **8 conversations** at once (`⌘N` new / `⌘[` `⌘]` switch / `⌘1`~`⌘8` jump), each independently bound to a mode with zero cross-contamination; **switching a conversation's mode passes the entire history to the new model** — Claude can keep going from what Hermes was discussing, and vice versa.
 
-### 🌌 Knowledge Nebula · a universe of conversations you never lose (NEW in v1.3.0 · the killer feature)
+### 🌌 Knowledge Nebula · a universe of conversations you never lose
 
 Other AI clients hand you a sidebar list that only grows **longer and more exhausting**. HermesPet gives you a **living, breathing galaxy**.
+
+<div align="center">
+<img src="docs/desktop/knowledge-graph.png" width="92%" alt="Knowledge Nebula ⌘⇧G · a galaxy of conversations" />
+<br/><sub>Hit <code>⌘⇧G</code> and the full-screen Knowledge Nebula floats up — each conversation is a star, clustered by keyword gravity</sub>
+</div>
 
 Hit **`⌘⇧G`** and a full-screen Knowledge Nebula floats up from your desktop — **every conversation is a glowing star**, brighter and bigger the deeper you went; similar topics get **pulled into clusters by keyword gravity** (fitness, travel, code, that bug you fought for three days…), each cluster labeled at its core so you see at a glance *what you've actually been talking about with your AI*. Sweep over a star and **only its links light up** while the rest fade into deep space; click it to **jump straight back into that conversation**. Liquid-glass depth, mode-color glow, a bloom-open entrance — this isn't a chat list, it's **the first time the things you and your AI thought through together are drawn as a map**.
 
 Underneath, three hard features ship together:
 
-- **🗂 Conversations never lost**: every chat lands in a **permanent local store** (`history.sqlite`, separate from the working set, never auto-deleted). You used to lose the oldest once 8 chats were open — now they're **all there**, browsable and keyword-searchable (local tokenizer; *"that one where we debugged the crash"* still finds it).
-- **🧠 It learns you over time**: long-term cross-conversation memory **auto-revises while you're idle**, so it still understands you no matter which engine you switch to — no re-explaining your context every time.
-- **⭐ Star to pin + 🗄 auto-archive**: star an important chat and it turns **bigger, gold-rimmed, never buried** in the nebula; chats untouched for 90+ days **quietly sink into the archive** (not deleted — recall anytime). The more data you accrue, the cleaner it stays — **store ten thousand, see only what matters**.
+- **🗂 Conversations never lost**: every chat lands in a **permanent local store** (`history.sqlite`, separate from the working set, never auto-deleted), browsable and keyword-searchable (local tokenizer; *"that one where we debugged the crash"* still finds it).
+- **🧠 It learns you over time**: long-term cross-conversation memory **auto-revises while you're idle**, so it still understands you no matter which engine you switch to.
+- **⭐ Star to pin + 🗄 auto-archive**: star an important chat and it turns **bigger, gold-rimmed, never buried**; chats untouched for 90+ days **quietly sink into the archive** (not deleted — recall anytime).
 
 > Fully local, zero upload. Those "revisit / star / salience" signals make HermesPet understand your rhythm the more you use it — and the final say is always yours.
 
-### 🆕 New in v1.4 · more and more like a partner that works alongside you
+### 🆕 More and more like a partner that works alongside you
 
 - 🎙 **Voice companion (`⌘⇧L`)**: summon a capsule floating under the notch and hold a **continuous voice conversation** with the AI (listen → think → speak, looping automatically). While listening it's a field of softly breathing **nebula particles**; as it speaks, **each word lights up as it's read aloud**, like karaoke lyrics your eyes can follow.
 - 📝 **AI Notes (`⌘⇧N`) + Writing mode**: a **local Markdown notebook** (three-pane window) your pet writes alongside you — let the AI continue / rewrite / tidy up as you type; Writing mode has live preview.
 - 🚀 **Fleet workflow (Beta)**: hand a task to a whole **"AI company" with real job roles** — the captain asks a few clarifying questions first, then splits the work across multiple AIs (research / copy / engineering / QA…) **running in parallel**, with a full-screen "fleet theater" showing every lane's progress live, then synthesizes it into one deliverable.
-- 🎬 **Meeting minutes**: record → auto-segmented transcription → AI organizes it into structured minutes.
+- 🎬 **Meeting minutes**: record → auto-segmented transcription → AI organizes it into structured minutes (it can even capture the other party's voice in online meetings).
 - 👁 **See & operate your screen (experimental)**: let the AI **see your screen** (screenshot + OCR) and **act on it** (move the mouse / click / type) to take over repetitive operations.
 - 🐣 **Pet growth**: as you get things done with the AI, your pet **gains XP, levels up, and shifts moods** — with more forms to unlock / collect down the road.
 
@@ -166,7 +246,7 @@ Underneath, three hard features ship together:
 
 Let the AI **plan tasks and dispatch them to the right AI**: say "help me list what to do today" and the AI replies with a ```` ```tasks ```` YAML block that the client renders into **actionable cards**, each with 3 buttons — 📌 **Pin** to the desktop (checkbox strikes through, never disappears) / 🤖 **Let AI do it** (auto-creates a conversation in the recommended mode) / ✗ **Skip**. Not just a chat client — a **task dispatch hub**.
 
-It also **quietly remembers you** (a big step in v1.2.13): it records what apps you used, files you dropped, and what you asked the AI (all in local SQLite, sensitive keywords stripped at the source), then gently checks in at the right moments:
+It also **quietly remembers you**: it records what apps you used, files you dropped, and what you asked the AI (all in local SQLite, sensitive keywords stripped at the source), then gently checks in at the right moments:
 
 - 🌅 **Daily briefing**: on morning launch the AI reviews yesterday, writes a Markdown recap, and **follows up proactively** ("You were tuning SwiftUI animation yesterday — want me to Pin the key solution to your desktop?")
 - 🎉 **Weekly review + milestones**: a recap every week, plus a little celebration at 30 / 100 / 365 days together
@@ -174,16 +254,9 @@ It also **quietly remembers you** (a big step in v1.2.13): it records what apps 
 
 > All intent data **stays on your machine** — one-click export to JSON / clear / blocklist an app.
 
-### 🌐 Bilingual UI (new in v1.2.13) · 🔄 Auto-update · 🛡 Anti-piracy
-
-- 🌐 **Full bilingual interface**: switch between **中文 / English** in settings — **instant, no restart**; even the AI's chat replies **follow the language you pick**; new users choose their language on first launch
-- 🔄 **In-app auto-update**: 60s after launch + every 24h checks GitHub Release; new version → 🔵 indicator in the menu bar → "Download & Install" fetches the DMG, mounts it, and Finder prompts you (**no Sparkle, no telemetry**)
-- 🛡 **Official version verification**: Settings → About → one-click codesign check; authentic build shows Team ID `R34KL4X4D9` (defeats third-party repackaging)
-- 🚨 **One-click crash reporting**: scans local crash logs → copies the full log to clipboard + opens the GitHub Issue page (**zero backend, zero privacy concerns**)
-
 ### 🎨 And a pile of nice little details
 
-Full **Markdown** render (GFM tables + numbered lists → clickable cards + code blocks with "copied" feedback) · **Pin** any AI reply to the desktop · **Quick-ask, redesigned (v1.2.14)** (`⌘⇧Space`, Spotlight-style) without opening the chat window — now with an iOS 26 liquid-glass look, and you can **select any screen region to OCR its text** for the AI · **paste images straight into chat** · **context-usage bar** so you always know how much room is left this turn · **input bar strictly follows Apple HIG** (Capsule + iMessage feel) · **5 chat font sizes** (`⌘+` / `⌘-` / `⌘0`) · **window pinning toggle** · **optional Dock icon** (defaults to menubar-agent style) · **5 event sounds** each togglable + custom audio drop-in.
+Full **Markdown** render (GFM tables + numbered lists → clickable cards + code blocks with "copied" feedback) · **Pin** any AI reply to the desktop · **Quick-ask** (`⌘⇧Space`, Spotlight-style) without opening the chat window — iOS 26 liquid-glass look, and you can **select any screen region to OCR its text** for the AI · **paste images straight into chat** · **context-usage bar** so you always know how much room is left this turn · **input bar strictly follows Apple HIG** (Capsule + iMessage feel) · **5 chat font sizes** (`⌘+` / `⌘-` / `⌘0`) · **window pinning toggle** · **optional Dock icon** (defaults to menubar-agent style) · **5 event sounds** each togglable + custom audio drop-in.
 
 ---
 
@@ -307,6 +380,7 @@ Each provider's **API Key is stored separately** (no cross-contamination); switc
 - 🛡 **Zero telemetry**: the project itself does NOT phone home. All AI calls go to backends you configure yourself (your API Key / your self-hosted Gateway / your local CLI)
 - 🛡 **Desktop patrol blocklist**: filenames pass through a local blocklist before reaching the AI (salary / contract / password / `.env` / `credentials` keywords are dropped entirely)
 - 🛡 **Activity sampling + shared memory stay local**: all briefing / memory data lives in local SQLite and **never leaves your machine**; one-click export to JSON / clear / blocklist an app / edit or disable shared memory
+- 🛡 **Phone companion uses your own iCloud**: cross-device sync is built on CloudKit — data lives in your iCloud, never through any third-party server
 - 🛡 **Crash logs**: HermesPet scans local crash files → copies the full log to clipboard → **you** manually paste into a GitHub Issue. It never auto-uploads anything.
 
 > Technical decision notes (gotchas / Swift 6 isolation / macOS layout cycles) live in [CLAUDE.md](./CLAUDE.md); roadmap in [TODO.md](./TODO.md). Pure native Swift, no Electron.
