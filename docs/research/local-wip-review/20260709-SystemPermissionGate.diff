@@ -1,0 +1,73 @@
+diff --git a/Sources/SystemPermissionGate.swift b/Sources/SystemPermissionGate.swift
+new file mode 100644
+index 0000000..883cf1f
+--- /dev/null
++++ b/Sources/SystemPermissionGate.swift
+@@ -0,0 +1,67 @@
++import Foundation
++import AVFoundation
++import CoreGraphics
++import Speech
++
++/// 统一收口系统级 TCC 权限触发，避免多个功能各自直接 request 导致重复弹窗。
++enum SystemPermissionGate {
++
++    // MARK: - 麦克风 + 语音识别
++
++    static func requestSpeechAndMicrophone() async -> (Bool, String?) {
++        let speechStatus = await speechAuthorizationStatus()
++        switch speechStatus {
++        case .authorized:
++            let micStatus = await microphoneAuthorizationStatus()
++            switch micStatus {
++            case .authorized:
++                return (true, nil)
++            case .denied, .restricted:
++                return (false, "麦克风权限被拒绝，请到 系统设置 → 隐私与安全性 → 麦克风 中允许 HermesPet")
++            case .notDetermined:
++                return (false, "麦克风权限尚未完成授权，请重试一次")
++            @unknown default:
++                return (false, "未知麦克风权限状态")
++            }
++        case .denied:
++            return (false, "语音识别权限被拒绝，请到 系统设置 → 隐私与安全性 → 语音识别 中允许 HermesPet")
++        case .restricted:
++            return (false, "本设备禁止使用语音识别")
++        case .notDetermined:
++            return (false, "语音识别权限尚未完成授权，请重试一次")
++        @unknown default:
++            return (false, "未知语音识别权限状态")
++        }
++    }
++
++    private static func speechAuthorizationStatus() async -> SFSpeechRecognizerAuthorizationStatus {
++        let status = SFSpeechRecognizer.authorizationStatus()
++        guard status == .notDetermined else { return status }
++        return await withCheckedContinuation { cont in
++            SFSpeechRecognizer.requestAuthorization { cont.resume(returning: $0) }
++        }
++    }
++
++    private static func microphoneAuthorizationStatus() async -> AVAuthorizationStatus {
++        let status = AVCaptureDevice.authorizationStatus(for: .audio)
++        guard status == .notDetermined else { return status }
++        let granted = await withCheckedContinuation { cont in
++            AVCaptureDevice.requestAccess(for: .audio) { cont.resume(returning: $0) }
++        }
++        return granted ? .authorized : .denied
++    }
++
++    // MARK: - 屏幕录制
++
++    @MainActor private static var didRequestScreenRecordingThisLaunch = false
++
++    /// 屏幕录制权限只在真实用户动作下触发，而且每次 App 运行最多请求一次。
++    /// 授权后需要用户手动重启进程生效；在同一进程里继续重复 request 只会造成骚扰。
++    @MainActor
++    @discardableResult
++    static func requestScreenRecordingOncePerLaunch() -> Bool {
++        guard !didRequestScreenRecordingThisLaunch else { return false }
++        didRequestScreenRecordingThisLaunch = true
++        return CGRequestScreenCaptureAccess()
++    }
++}
