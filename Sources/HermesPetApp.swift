@@ -455,9 +455,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         startPolling()
 
-        // 启动时主动请求一次屏幕录制权限：第一次启动会弹系统申请框；
-        // 已经允许就什么都不做。这样用户不必"按了热键发现没反应才知道要权限"
-        _ = ScreenCapture.requestScreenRecordingPermission()
+        // 不在启动时主动申请屏幕录制。
+        // 录屏 / 会议系统音频都改成用户真实触发时再走权限闸门，避免每次开 app 都打扰。
 
         // 触发字幕窗 controller 初始化（init 时自己注册 Voice 通知，不需要 AppDelegate 后续维护）
         _ = VoiceTranscriptOverlayController.shared
