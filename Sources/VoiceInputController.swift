@@ -42,32 +42,7 @@ final class VoiceInputController: @unchecked Sendable {
 
     /// 请求语音识别 + 麦克风权限。返回 (是否全部授权, 错误描述)。
     func requestPermissions() async -> (Bool, String?) {
-        let speechStatus: SFSpeechRecognizerAuthorizationStatus = await withCheckedContinuation { cont in
-            SFSpeechRecognizer.requestAuthorization { status in
-                cont.resume(returning: status)
-            }
-        }
-        switch speechStatus {
-        case .authorized:
-            let micGranted: Bool = await withCheckedContinuation { cont in
-                AVCaptureDevice.requestAccess(for: .audio) { granted in
-                    cont.resume(returning: granted)
-                }
-            }
-            if micGranted {
-                return (true, nil)
-            } else {
-                return (false, "麦克风权限被拒绝，请到 系统设置 → 隐私与安全性 → 麦克风 中允许 HermesPet")
-            }
-        case .denied:
-            return (false, "语音识别权限被拒绝，请到 系统设置 → 隐私与安全性 → 语音识别 中允许 HermesPet")
-        case .restricted:
-            return (false, "本设备禁止使用语音识别")
-        case .notDetermined:
-            return (false, "用户尚未授权")
-        @unknown default:
-            return (false, "未知权限状态")
-        }
+        await SystemPermissionGate.requestSpeechAndMicrophone()
     }
 
     // MARK: - 录音 + 识别

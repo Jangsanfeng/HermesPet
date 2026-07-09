@@ -14,9 +14,10 @@ enum ScreenCapture {
 
     /// 主动请求屏幕录制权限。首次会弹系统对话框，之后用户得自己去
     /// 系统设置 → 隐私与安全性 → 屏幕录制 里勾选并重启 app。
+    @MainActor
     @discardableResult
     static func requestScreenRecordingPermission() -> Bool {
-        CGRequestScreenCaptureAccess()
+        SystemPermissionGate.requestScreenRecordingOncePerLaunch()
     }
 
     /// 截当前主屏 —— 区分"无权限"vs"其他失败"。
