@@ -1,0 +1,6 @@
+ Sources/HermesPetApp.swift         |  5 ++---
+ Sources/MeetingRecorder.swift      | 21 +--------------------
+ Sources/ScreenCapture.swift        |  3 ++-
+ Sources/VoiceChatMic.swift         | 13 +------------
+ Sources/VoiceInputController.swift | 27 +--------------------------
+ 5 files changed, 7 insertions(+), 62 deletions(-)

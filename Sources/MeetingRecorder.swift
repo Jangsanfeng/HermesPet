@@ -131,26 +131,7 @@ final class MeetingRecorder: @unchecked Sendable {
     // MARK: - 权限（麦克风 + 语音识别，同 VoiceInputController）
     // 屏幕录制权限不在这里预检（决策 #3：直接试 SCK 让它自己决定）；缺了系统路自动降级。
     func requestPermissions() async -> (Bool, String?) {
-        let speechStatus: SFSpeechRecognizerAuthorizationStatus = await withCheckedContinuation { cont in
-            SFSpeechRecognizer.requestAuthorization { cont.resume(returning: $0) }
-        }
-        switch speechStatus {
-        case .authorized:
-            let micGranted: Bool = await withCheckedContinuation { cont in
-                AVCaptureDevice.requestAccess(for: .audio) { cont.resume(returning: $0) }
-            }
-            return micGranted
-                ? (true, nil)
-                : (false, "麦克风权限被拒绝，请到 系统设置 → 隐私与安全性 → 麦克风 中允许 HermesPet")
-        case .denied:
-            return (false, "语音识别权限被拒绝，请到 系统设置 → 隐私与安全性 → 语音识别 中允许 HermesPet")
-        case .restricted:
-            return (false, "本设备禁止使用语音识别")
-        case .notDetermined:
-            return (false, "用户尚未授权")
-        @unknown default:
-            return (false, "未知权限状态")
-        }
+        await SystemPermissionGate.requestSpeechAndMicrophone()
     }
 
     // MARK: - 开始

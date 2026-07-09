@@ -1,0 +1,11 @@
+ M Sources/HermesPetApp.swift
+ M Sources/MeetingRecorder.swift
+ M Sources/ScreenCapture.swift
+ M Sources/VoiceChatMic.swift
+ M Sources/VoiceInputController.swift
+?? Sources/SystemPermissionGate.swift
+?? docs/build-and-launch-report.md
+?? docs/core-feature-evidence.md
+?? docs/local-sync-audit/
+?? docs/source-integrity-report.md
+?? docs/upstream-diff-report.md

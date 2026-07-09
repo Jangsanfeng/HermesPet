@@ -32,18 +32,7 @@ final class VoiceChatMic: @unchecked Sendable {
     // MARK: - 权限
 
     func requestPermissions() async -> (Bool, String?) {
-        let speechStatus: SFSpeechRecognizerAuthorizationStatus = await withCheckedContinuation { cont in
-            SFSpeechRecognizer.requestAuthorization { cont.resume(returning: $0) }
-        }
-        guard speechStatus == .authorized else {
-            return (false, "语音识别权限未授权，请到 系统设置 → 隐私与安全性 → 语音识别 中允许 HermesPet")
-        }
-        let micGranted: Bool = await withCheckedContinuation { cont in
-            AVCaptureDevice.requestAccess(for: .audio) { cont.resume(returning: $0) }
-        }
-        return micGranted
-            ? (true, nil)
-            : (false, "麦克风权限被拒绝，请到 系统设置 → 隐私与安全性 → 麦克风 中允许 HermesPet")
+        await SystemPermissionGate.requestSpeechAndMicrophone()
     }
 
     var isEngineRunning: Bool { lock.lock(); defer { lock.unlock() }; return _engineRunning }

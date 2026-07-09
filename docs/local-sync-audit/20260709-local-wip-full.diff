@@ -1,0 +1,126 @@
+diff --git a/Sources/HermesPetApp.swift b/Sources/HermesPetApp.swift
+index 8cf0f88..870036c 100644
+--- a/Sources/HermesPetApp.swift
++++ b/Sources/HermesPetApp.swift
+@@ -455,9 +455,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
+ 
+         startPolling()
+ 
+-        // 启动时主动请求一次屏幕录制权限：第一次启动会弹系统申请框；
+-        // 已经允许就什么都不做。这样用户不必"按了热键发现没反应才知道要权限"
+-        _ = ScreenCapture.requestScreenRecordingPermission()
++        // 不在启动时主动申请屏幕录制。
++        // 录屏 / 会议系统音频都改成用户真实触发时再走权限闸门，避免每次开 app 都打扰。
+ 
+         // 触发字幕窗 controller 初始化（init 时自己注册 Voice 通知，不需要 AppDelegate 后续维护）
+         _ = VoiceTranscriptOverlayController.shared
+diff --git a/Sources/MeetingRecorder.swift b/Sources/MeetingRecorder.swift
+index 8818d40..ee2fcc0 100644
+--- a/Sources/MeetingRecorder.swift
++++ b/Sources/MeetingRecorder.swift
+@@ -131,26 +131,7 @@ final class MeetingRecorder: @unchecked Sendable {
+     // MARK: - 权限（麦克风 + 语音识别，同 VoiceInputController）
+     // 屏幕录制权限不在这里预检（决策 #3：直接试 SCK 让它自己决定）；缺了系统路自动降级。
+     func requestPermissions() async -> (Bool, String?) {
+-        let speechStatus: SFSpeechRecognizerAuthorizationStatus = await withCheckedContinuation { cont in
+-            SFSpeechRecognizer.requestAuthorization { cont.resume(returning: $0) }
+-        }
+-        switch speechStatus {
+-        case .authorized:
+-            let micGranted: Bool = await withCheckedContinuation { cont in
+-                AVCaptureDevice.requestAccess(for: .audio) { cont.resume(returning: $0) }
+-            }
+-            return micGranted
+-                ? (true, nil)
+-                : (false, "麦克风权限被拒绝，请到 系统设置 → 隐私与安全性 → 麦克风 中允许 HermesPet")
+-        case .denied:
+-            return (false, "语音识别权限被拒绝，请到 系统设置 → 隐私与安全性 → 语音识别 中允许 HermesPet")
+-        case .restricted:
+-            return (false, "本设备禁止使用语音识别")
+-        case .notDetermined:
+-            return (false, "用户尚未授权")
+-        @unknown default:
+-            return (false, "未知权限状态")
+-        }
++        await SystemPermissionGate.requestSpeechAndMicrophone()
+     }
+ 
+     // MARK: - 开始
+diff --git a/Sources/ScreenCapture.swift b/Sources/ScreenCapture.swift
+index 631a981..15353e1 100644
+--- a/Sources/ScreenCapture.swift
++++ b/Sources/ScreenCapture.swift
+@@ -14,9 +14,10 @@ enum ScreenCapture {
+ 
+     /// 主动请求屏幕录制权限。首次会弹系统对话框，之后用户得自己去
+     /// 系统设置 → 隐私与安全性 → 屏幕录制 里勾选并重启 app。
++    @MainActor
+     @discardableResult
+     static func requestScreenRecordingPermission() -> Bool {
+-        CGRequestScreenCaptureAccess()
++        SystemPermissionGate.requestScreenRecordingOncePerLaunch()
+     }
+ 
+     /// 截当前主屏 —— 区分"无权限"vs"其他失败"。
+diff --git a/Sources/VoiceChatMic.swift b/Sources/VoiceChatMic.swift
+index 70abb9f..61b4bf0 100644
+--- a/Sources/VoiceChatMic.swift
++++ b/Sources/VoiceChatMic.swift
+@@ -32,18 +32,7 @@ final class VoiceChatMic: @unchecked Sendable {
+     // MARK: - 权限
+ 
+     func requestPermissions() async -> (Bool, String?) {
+-        let speechStatus: SFSpeechRecognizerAuthorizationStatus = await withCheckedContinuation { cont in
+-            SFSpeechRecognizer.requestAuthorization { cont.resume(returning: $0) }
+-        }
+-        guard speechStatus == .authorized else {
+-            return (false, "语音识别权限未授权，请到 系统设置 → 隐私与安全性 → 语音识别 中允许 HermesPet")
+-        }
+-        let micGranted: Bool = await withCheckedContinuation { cont in
+-            AVCaptureDevice.requestAccess(for: .audio) { cont.resume(returning: $0) }
+-        }
+-        return micGranted
+-            ? (true, nil)
+-            : (false, "麦克风权限被拒绝，请到 系统设置 → 隐私与安全性 → 麦克风 中允许 HermesPet")
++        await SystemPermissionGate.requestSpeechAndMicrophone()
+     }
+ 
+     var isEngineRunning: Bool { lock.lock(); defer { lock.unlock() }; return _engineRunning }
+diff --git a/Sources/VoiceInputController.swift b/Sources/VoiceInputController.swift
+index cc3557f..b46c960 100644
+--- a/Sources/VoiceInputController.swift
++++ b/Sources/VoiceInputController.swift
+@@ -42,32 +42,7 @@ final class VoiceInputController: @unchecked Sendable {
+ 
+     /// 请求语音识别 + 麦克风权限。返回 (是否全部授权, 错误描述)。
+     func requestPermissions() async -> (Bool, String?) {
+-        let speechStatus: SFSpeechRecognizerAuthorizationStatus = await withCheckedContinuation { cont in
+-            SFSpeechRecognizer.requestAuthorization { status in
+-                cont.resume(returning: status)
+-            }
+-        }
+-        switch speechStatus {
+-        case .authorized:
+-            let micGranted: Bool = await withCheckedContinuation { cont in
+-                AVCaptureDevice.requestAccess(for: .audio) { granted in
+-                    cont.resume(returning: granted)
+-                }
+-            }
+-            if micGranted {
+-                return (true, nil)
+-            } else {
+-                return (false, "麦克风权限被拒绝，请到 系统设置 → 隐私与安全性 → 麦克风 中允许 HermesPet")
+-            }
+-        case .denied:
+-            return (false, "语音识别权限被拒绝，请到 系统设置 → 隐私与安全性 → 语音识别 中允许 HermesPet")
+-        case .restricted:
+-            return (false, "本设备禁止使用语音识别")
+-        case .notDetermined:
+-            return (false, "用户尚未授权")
+-        @unknown default:
+-            return (false, "未知权限状态")
+-        }
++        await SystemPermissionGate.requestSpeechAndMicrophone()
+     }
+ 
+     // MARK: - 录音 + 识别
